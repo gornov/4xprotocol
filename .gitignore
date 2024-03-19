@@ -9,3 +9,8 @@ test-ledger
 **/yarn.lock
 
 **/.next
+
+/prog_id.json
+/{1,2,3,4,5,6}.json
+
+.env.local

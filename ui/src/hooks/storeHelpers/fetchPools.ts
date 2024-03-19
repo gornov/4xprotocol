@@ -17,8 +17,14 @@ export async function getPoolData(
 ): Promise<Record<string, PoolAccount>> {
   let { perpetual_program, provider } = await getPerpetualProgramAndProvider();
 
-  // @ts-ignore
-  let fetchedPools: FetchPool[] = await perpetual_program.account.pool.all();
+  let fetchedPools: FetchPool[];
+  try {
+    // @ts-ignore
+    fetchedPools = await perpetual_program.account.pool.all();
+  } catch {
+    fetchedPools = [];
+  }
+
   let poolObjs: Record<string, PoolAccount> = {};
 
   await Promise.all(

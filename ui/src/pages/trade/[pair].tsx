@@ -16,6 +16,7 @@ function getComparisonCurrency() {
 
 export default function Page() {
   const router = useRouter();
+  console.log(router);
   const { pair } = router.query;
 
   if (!pair) {

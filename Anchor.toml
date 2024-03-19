@@ -1,9 +1,9 @@
 [features]
 seeds = false
 [programs.localnet]
-perpetuals = "Bmr31xzZYYVUdoHmAJL1DAp2anaitW8Tw9YfASS94MKJ"
+perpetuals = "JAxwfejiqFT3KZ3DkmGrn5jSK83ygBPFUuK4HFAva4n6"
 [programs.devnet]
-perpetuals = "Bmr31xzZYYVUdoHmAJL1DAp2anaitW8Tw9YfASS94MKJ"
+perpetuals = "JAxwfejiqFT3KZ3DkmGrn5jSK83ygBPFUuK4HFAva4n6"
 
 [registry]
 url = "https://anchor.projectserum.com"

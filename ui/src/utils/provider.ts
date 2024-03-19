@@ -6,11 +6,12 @@ export async function getProvider(
   network: string = "devnet"
 ): Promise<AnchorProvider> {
   let network_url;
-  if (network === "devnet") {
-    network_url = "https://api.devnet.solana.com";
-  } else {
-    network_url = "http://localhost:8899";
-  }
+  // if (network === "devnet") {
+  //   network_url = "https://api.devnet.solana.com";
+  // } else {
+  //   network_url = "http://localhost:8899";
+  // }
+  network_url = process.env.URL || "http://localhost:8899";
 
   const connection = new Connection(network_url, {
     commitment: "processed",

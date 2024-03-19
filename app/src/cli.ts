@@ -1,7 +1,7 @@
 /// Command-line interface for basic admin functions
 
 import { BN } from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { PerpetualsClient, PositionSide } from "./client";
 import { Command } from "commander";
 
@@ -11,6 +11,27 @@ function initClient(clusterUrl: string, adminKeyPath: string) {
   process.env["ANCHOR_WALLET"] = adminKeyPath;
   client = new PerpetualsClient(clusterUrl, adminKeyPath);
   client.log("Client Initialized");
+}
+
+async function updateOracle(address: PublicKey[]) {
+  const tx = new Transaction();
+  const buf = Buffer.alloc(256);
+  tx.add(
+    new TransactionInstruction({
+      data: buf,
+      programId: new PublicKey("shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL"),
+      keys: [{pubkey: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"), isSigner: false, isWritable: true}],
+    })
+  )
+  let blockhash = (await client.provider.connection.getLatestBlockhash('finalized')).blockhash;
+  tx.recentBlockhash = blockhash;
+  tx.sign(client.admin);
+  const signature = await sendAndConfirmTransaction(
+    client.provider.connection,
+    tx,
+    [client.admin],
+  );
+  console.log('SIGNATURE', signature);
 }
 
 async function init(adminSigners: PublicKey[], minSignatures: number) {
@@ -318,6 +339,16 @@ async function getAum(poolName: string) {
     })
     .hook("postAction", () => {
       client.log("Done");
+    });
+
+    program
+    .command("updateOracle")
+    .description("updateOracle")
+    .argument("<pubkey...>", "Admin public keys")
+    .action(async (args, options) => {
+      await updateOracle(
+        args.map((x) => new PublicKey(x)),
+      );
     });
 
   program

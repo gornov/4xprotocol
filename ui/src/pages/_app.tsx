@@ -60,24 +60,25 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
 const Context: FC<{ children: ReactNode }> = ({ children }) => {
   // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // const network = WalletAdapterNetwork.Devnet;
+  // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
   // const endpoint = useMemo(() => "http://localhost:8899");
+  const endpoint = process.env.URL || "http://localhost:8899";
 
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),
-      new SlopeWalletAdapter(),
+      // new SlopeWalletAdapter(),
       new TorusWalletAdapter(),
       new LedgerWalletAdapter(),
-      new BackpackWalletAdapter(),
-      new BraveWalletAdapter(),
+      // new BackpackWalletAdapter(),
+      // new BraveWalletAdapter(),
       new CloverWalletAdapter(),
       new CoinbaseWalletAdapter(),
-      new ExodusWalletAdapter(),
-      new GlowWalletAdapter(),
+      // new ExodusWalletAdapter(),
+      // new GlowWalletAdapter(),
       new HuobiWalletAdapter(),
-      new SolletWalletAdapter(),
+      // new SolletWalletAdapter(),
       new SolongWalletAdapter(),
       new TrustWalletAdapter(),
     ],

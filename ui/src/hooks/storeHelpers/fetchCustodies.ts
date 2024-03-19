@@ -13,9 +13,14 @@ export async function getCustodyData(): Promise<
 > {
   let { perpetual_program } = await getPerpetualProgramAndProvider();
 
-  // @ts-ignore
-  let fetchedCustodies: FetchCustody[] =
-    await perpetual_program.account.custody.all();
+  let fetchedCustodies: FetchCustody[];
+  try {
+    // @ts-ignore
+    fetchedCustodies =
+      await perpetual_program.account.custody.all();
+  } catch {
+    fetchedCustodies = [];
+  }
 
   let custodyInfos: Record<string, CustodyAccount> = fetchedCustodies.reduce(
     (acc: Record<string, CustodyAccount>, { account, publicKey }) => (
