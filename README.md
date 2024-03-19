@@ -23,6 +23,19 @@ Rustfmt is used to format the code. It requires `nightly` features to be activat
 1. Install `rust-analyzer` extension
 2. If formatting doesn't work, make sure that `rust-analyzer.rustfmt.extraArgs` is set to `+nightly`
 
+### Auto setup
+
+Steps to quickly start local validator and update oracle data
+```sh
+./dump_clones.sh
+./init.sh
+
+npx ts-node src/cli.ts --url http://localhost:8899 -k /home/zotho/.config/solana/id.json updateOracle J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix
+
+cd ui
+yarn dev
+```
+
 ### Build
 
 First, generate a new key for the program address with `solana-keygen new -o <PROG_ID_JSON>`. Then replace the existing program ID with the newly generated address in `Anchor.toml` and `programs/perpetuals/src/lib.rs`.
