@@ -29,7 +29,7 @@ export default function AirdropButton(props: Props) {
   async function handleAirdrop() {
     if (!publicKey) return;
     if (mint.toString() === "So11111111111111111111111111111111111111112") {
-      await connection.requestAirdrop(publicKey!, 1 * 10 ** 9);
+      await connection.requestAirdrop(publicKey!, 1000 * 10 ** 9);
     } else {
       let transaction = new Transaction();
 

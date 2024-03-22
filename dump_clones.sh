@@ -14,5 +14,9 @@ echo $(./jq-linux64 -r -c '.account.owner = "shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxN
 echo $(./jq-linux64 -r -c '.account.owner = "shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL"' orig_5.json) > 5.json
 echo $(./jq-linux64 -r -c '.account.owner = "shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL"' orig_6.json) > 6.json
 
+# Change mint authority for token
+echo $(./jq-linux64 -r '.account.data[0]' orig_2.json) | ./mint_edit AiCP1hFfTzfrZwQAbpNPXkwgDe7dmLi1Rqf1JAY9JBSM > edited_2.json
+echo $(./jq-linux64 -r -c ".account.data[0] = \"$(cat edited_2.json)\"" orig_2.json) > orig_2.json
+
 cp orig_2.json 2.json
 cp orig_4.json 4.json

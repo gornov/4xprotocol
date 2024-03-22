@@ -32,6 +32,8 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 import { Navbar } from "@/components/Navbar";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 
+export const ENDPOINT = process.env.NEXT_PUBLIC_URL || "http://localhost:8899";
+
 const StoreUpdater = () => {
   useHydrateStore();
   return null;
@@ -63,7 +65,6 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
   // const network = WalletAdapterNetwork.Devnet;
   // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
   // const endpoint = useMemo(() => "http://localhost:8899");
-  const endpoint = process.env.URL || "http://localhost:8899";
 
   const wallets = useMemo(
     () => [
@@ -87,7 +88,7 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-black pt-14">
-      <ConnectionProvider endpoint={endpoint}>
+      <ConnectionProvider endpoint={ENDPOINT}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>{children}</WalletModalProvider>
         </WalletProvider>

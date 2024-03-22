@@ -306,11 +306,13 @@ export const sendRawTransaction = async ({
     });
     // notify(successMessage);
   } catch (err) {
+    let errString = JSON.stringify(err, null, 2);
+    let logString = JSON.stringify((await connection.getTransaction(txid))["meta"]["logMessages"], null, 2);
     if (err.timeout) {
       throw new Error("Transaction timed out");
       // notify(txid+" "+ " - Timed out", "error");
     }
-    throw new Error("Transaction Failed : " + err.message);
+    throw new Error("Transaction Failed : " + (err.message || `${errString}\n${logString}`));
     // notify(txid+" "+failMessage, "error");
   } finally {
     done = true;
@@ -406,6 +408,7 @@ export const sendSignedTransactionAndNotify = async ({
         },
         error: {
           render({ data }) {
+            console.warn("data", data);
             // When the promise reject, data will contains the error
             return (
               <div className="processing-transaction">

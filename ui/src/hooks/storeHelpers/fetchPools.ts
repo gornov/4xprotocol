@@ -21,7 +21,8 @@ export async function getPoolData(
   try {
     // @ts-ignore
     fetchedPools = await perpetual_program.account.pool.all();
-  } catch {
+  } catch (error) {
+    console.warn("error", error);
     fetchedPools = [];
   }
 
@@ -68,7 +69,9 @@ export async function getPoolData(
               poolObjs[pool.publicKey.toString()]
             );
             loopStatus = false;
-          } catch (error) {}
+          } catch (error) {
+            console.log("error", error);
+          }
         }
 
         poolObjs[pool.publicKey.toString()].setAum(fetchedAum);

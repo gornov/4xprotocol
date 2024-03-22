@@ -26,6 +26,8 @@ export const useHydrateStore = () => {
       const poolData = await getPoolData(custodyData);
       const positionInfos = await getPositionData(custodyData);
 
+      console.log("poolData", poolData);
+
       setCustodyData(custodyData);
       setPoolData(poolData);
       setPositionData(positionInfos);

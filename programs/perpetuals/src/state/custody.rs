@@ -464,6 +464,7 @@ impl Custody {
         if self.pricing.max_position_locked_usd > 0 {
             let locked_amount_usd =
                 token_price.get_asset_amount_usd(position.locked_amount, self.decimals)?;
+            require_gte!(self.pricing.max_position_locked_usd, locked_amount_usd, PerpetualsError::PositionAmountLimit);
             require!(
                 locked_amount_usd <= self.pricing.max_position_locked_usd,
                 PerpetualsError::PositionAmountLimit
@@ -472,6 +473,7 @@ impl Custody {
         if self.pricing.max_total_locked_usd > 0 {
             let locked_amount_usd =
                 token_price.get_asset_amount_usd(stats.locked_amount, self.decimals)?;
+            require_gte!(self.pricing.max_total_locked_usd, locked_amount_usd, PerpetualsError::CustodyAmountLimit);
             require!(
                 locked_amount_usd <= self.pricing.max_total_locked_usd,
                 PerpetualsError::CustodyAmountLimit

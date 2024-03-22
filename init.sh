@@ -1,9 +1,10 @@
 #!/bin/bash
 
 set -e
-set -m
 
-trap 'kill $BGPID; echo " Stopping solana-test-validator"; exit' INT SIGTERM
+source ./dump_clones.sh
+
+trap 'kill $BGPID; echo " Stopping solana-test-validator"; exit' SIGINT SIGTERM
 
 anchor build
 
@@ -40,4 +41,9 @@ $cli add-custody TestPool1 Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr 5SSkXsEK
 
 cd -
 
-fg || kill $BGPID
+solana transfer HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu 100 --allow-unfunded-recipient
+
+spl-token create-account 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX
+spl-token mint 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX 100
+
+wait $BGPID

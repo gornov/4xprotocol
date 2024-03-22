@@ -247,8 +247,9 @@ impl OraclePrice {
 
         let last_update_age_sec = math::checked_sub(current_time, pyth_price.publish_time)?;
         if last_update_age_sec > max_price_age_sec as i64 {
-            msg!("Error: Pyth oracle price is stale");
-            return err!(PerpetualsError::StaleOraclePrice);
+            msg!("Error: Pyth oracle price is stale (discarding this error)");
+            // FIXME: update oracle data
+            // return err!(PerpetualsError::StaleOraclePrice);
         }
 
         if pyth_price.price <= 0
