@@ -28,7 +28,7 @@ BGPID=$!
 anchor deploy --program-name perpetuals --program-keypair prog_id.json
 anchor idl init --filepath ./target/idl/perpetuals.json $(solana-keygen pubkey prog_id.json)
 
-cd app
+pushd app
 
 cli="npx ts-node src/cli.ts --url http://localhost:8899 -k /home/zotho/.config/solana/id.json"
 
@@ -39,7 +39,7 @@ $cli add-custody TestPool1 So11111111111111111111111111111111111111112 J83w4HKfq
 $cli add-custody TestPool1 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX BLArYBCUYhdWiY8PCUTpvFE21iaJq85dvxLk9bYMobcU
 $cli add-custody TestPool1 Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr 5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7 true
 
-cd -
+popd -
 
 solana transfer HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu 100 --allow-unfunded-recipient
 

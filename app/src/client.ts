@@ -267,7 +267,7 @@ export class PerpetualsClient {
     return Buffer.from(sha256.digest(`account:${name}`)).slice(0, 8);
   };
 
-  log = (...message: string) => {
+  log = (message: string) => {
     let date = new Date();
     let date_str = date.toDateString();
     let time = date.toLocaleTimeString();
@@ -538,7 +538,7 @@ export class PerpetualsClient {
   getAddLiquidityAmountAndFee = async (
     poolName: string,
     tokenMint: PublicKey,
-    amount: typeof BN
+    amount: BN
   ) => {
     return await this.program.methods
       .getAddLiquidityAmountAndFee({
@@ -565,7 +565,7 @@ export class PerpetualsClient {
   getRemoveLiquidityAmountAndFee = async (
     poolName: string,
     tokenMint: PublicKey,
-    lpAmount: typeof BN
+    lpAmount: BN
   ) => {
     return await this.program.methods
       .getRemoveLiquidityAmountAndFee({
@@ -592,8 +592,8 @@ export class PerpetualsClient {
   getEntryPriceAndFee = async (
     poolName: string,
     tokenMint: PublicKey,
-    collateral: typeof BN,
-    size: typeof BN,
+    collateral: BN,
+    size: BN,
     side: PositionSide
   ) => {
     return await this.program.methods
@@ -648,8 +648,8 @@ export class PerpetualsClient {
     poolName: string,
     tokenMint: PublicKey,
     side: PositionSide,
-    addCollateral: typeof BN,
-    removeCollateral: typeof BN
+    addCollateral: BN,
+    removeCollateral: BN
   ) => {
     return await this.program.methods
       .getLiquidationPrice({

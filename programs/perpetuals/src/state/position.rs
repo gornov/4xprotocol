@@ -48,6 +48,9 @@ pub struct Position {
     pub locked_amount: u64,
     pub collateral_amount: u64,
 
+    pub stop_loss: u64,
+    pub take_profit: u64,
+
     pub bump: u8,
 }
 

@@ -1,27 +1,27 @@
 import "@/styles/globals.css";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+// import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
-  BackpackWalletAdapter,
-  BraveWalletAdapter,
+  // BackpackWalletAdapter,
+  // BraveWalletAdapter,
   CloverWalletAdapter,
   CoinbaseWalletAdapter,
-  ExodusWalletAdapter,
-  GlowWalletAdapter,
+  // ExodusWalletAdapter,
+  // GlowWalletAdapter,
   HuobiWalletAdapter,
   LedgerWalletAdapter,
   PhantomWalletAdapter,
-  SlopeWalletAdapter,
-  SolletWalletAdapter,
+  // SlopeWalletAdapter,
+  // SolletWalletAdapter,
   SolongWalletAdapter,
   TorusWalletAdapter,
   TrustWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import { clusterApiUrl } from "@solana/web3.js";
+import { clusterApiUrl, Cluster } from "@solana/web3.js";
 import { AppProps } from "next/app";
 import React, { FC, ReactNode, useMemo } from "react";
 import { ToastContainer } from "react-toastify";
@@ -32,7 +32,16 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 import { Navbar } from "@/components/Navbar";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 
-export const ENDPOINT = process.env.NEXT_PUBLIC_URL || "http://localhost:8899";
+const getRpcAddress = (cluster: string | undefined) => {
+  if (cluster && ["devnet", "testnet", "mainnet-beta"].includes(cluster)) {
+    return clusterApiUrl(cluster as Cluster);
+  } else {
+    return cluster || "http://localhost:8899";
+  }
+};
+export const ENDPOINT = getRpcAddress(process.env.NEXT_PUBLIC_SOLANA_RPC_URL);
+console.log("ENDPOINT", ENDPOINT);
+
 
 const StoreUpdater = () => {
   useHydrateStore();

@@ -5,7 +5,7 @@ import { PublicKey, Transaction, TransactionInstruction, sendAndConfirmTransacti
 import { PerpetualsClient, PositionSide } from "./client";
 import { Command } from "commander";
 
-let client;
+let client: PerpetualsClient;
 
 function initClient(clusterUrl: string, adminKeyPath: string) {
   process.env["ANCHOR_WALLET"] = adminKeyPath;
@@ -137,7 +137,21 @@ async function addCustody(
     optimalUtilization: new BN(800000000),
   };
 
-  let pool = await client.getPool(poolName);
+  let pool = undefined;
+  for (let index = 0; index < 3; index++) {
+    try {
+      pool = await client.getPool(poolName);
+      break;
+    } catch {
+      // Handle retry
+      console.warn("Failed to get pool. Retrying in 1 second");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  if (pool == undefined) {
+    pool = await client.getPool(poolName); // Unhandled error
+  }
+  
   pool.ratios.push({
     target: new BN(5000),
     min: new BN(10),
@@ -145,6 +159,18 @@ async function addCustody(
   });
   let ratios = client.adjustTokenRatios(pool.ratios);
 
+  console.log(
+    "client.addCustody",
+    "poolName", poolName, "\n",
+    "tokenMint", tokenMint.toString(), "\n",
+    "isStable", isStable, "\n",
+    "oracleConfig", JSON.stringify(oracleConfig, null, 2), "\n",
+    "pricingConfig", JSON.stringify(pricingConfig, null, 2), "\n",
+    "permissions", JSON.stringify(permissions, null, 2), "\n",
+    "fees", JSON.stringify(fees, null, 2), "\n",
+    "borrowRate", JSON.stringify(borrowRate, null, 2), "\n",
+    "ratios", ratios, "\n",
+  );
   client.addCustody(
     poolName,
     tokenMint,
@@ -168,7 +194,7 @@ async function getCustodies(poolName: string) {
 
 async function removeCustody(poolName: string, tokenMint: PublicKey) {
   let pool = await client.getPool(poolName);
-  pool.ratios.pop();
+  (pool.ratios as any).pop();
   let ratios = client.adjustTokenRatios(pool.ratios);
 
   client.removeCustody(poolName, tokenMint, ratios);

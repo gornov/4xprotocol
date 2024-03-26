@@ -4,7 +4,7 @@ import { ENDPOINT } from "src/pages/_app";
 
 export async function getProvider(
   wallet: Wallet,
-  network: string = "devnet"
+  // network: string = "devnet"
 ): Promise<AnchorProvider> {
   // let network_url;
   // if (network === "devnet") {
