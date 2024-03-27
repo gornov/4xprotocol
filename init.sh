@@ -39,7 +39,7 @@ $cli add-custody TestPool1 So11111111111111111111111111111111111111112 J83w4HKfq
 $cli add-custody TestPool1 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX BLArYBCUYhdWiY8PCUTpvFE21iaJq85dvxLk9bYMobcU
 $cli add-custody TestPool1 Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr 5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7 true
 
-popd -
+popd
 
 solana transfer HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu 100 --allow-unfunded-recipient
 
