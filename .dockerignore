@@ -9,7 +9,6 @@ test-ledger
 
 **/.next
 
-/prog_id.json
 ?.json
 orig_?.json
 edited_?.json
