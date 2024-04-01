@@ -33,7 +33,7 @@ anchor idl init --filepath ./target/idl/perpetuals.json $(solana-keygen pubkey p
 
 pushd app
 
-cli="npx ts-node src/cli.ts --url http://localhost:8899 -k /home/zotho/.config/solana/id.json"
+cli="npx ts-node src/cli.ts --url http://localhost:8899 -k ~/.config/solana/id.json"
 
 $cli init --min-signatures 1 $(solana address)
 
