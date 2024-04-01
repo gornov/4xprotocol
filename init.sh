@@ -45,9 +45,14 @@ $cli add-custody TestPool1 Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr 5SSkXsEK
 
 popd
 
+echo "[Transfer]"
 solana transfer HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu 100 --allow-unfunded-recipient
 
+echo "[Create account]"
 spl-token create-account 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX
-spl-token mint 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX 100
+echo "[Mint]"
+spl-token mint 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX 100 || echo "Mint failed"
 
+echo "[Started]"
+echo "[Waiting for Ctrl-C]"
 wait $BGPID
