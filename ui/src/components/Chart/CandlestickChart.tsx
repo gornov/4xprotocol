@@ -3,10 +3,17 @@ import { DailyStats } from "@/components/Chart/DailyStats";
 import { getSymbol, TokenE } from "@/lib/Token";
 import dynamic from "next/dynamic";
 
-// @ts-ignore
-const TradingViewWidget = dynamic<any>(import("react-tradingview-widget"), {
-  ssr: false,
-});
+const AdvancedRealTimeChartNoSSR = dynamic(
+  () => import("react-ts-tradingview-widgets").then((w) => w.AdvancedRealTimeChart),
+  {
+    ssr: false,
+  }
+);
+
+// // @ts-ignore
+// const TradingViewWidget = dynamic<any>(import("react-tradingview-widget"), {
+//   ssr: false,
+// });
 
 interface Props {
   className?: string;
@@ -25,10 +32,10 @@ export function CandlestickChart(props: Props) {
         <DailyStats className="ml-12" token={props.token} />
       </div>
       <div className="h-[350px] md:h-[500px]">
-        <TradingViewWidget
+        <AdvancedRealTimeChartNoSSR
           autosize
           symbol={getSymbol(props.token)}
-          theme="Dark"
+          theme="dark"
         />
         <div className="items-center text-center">
           <a

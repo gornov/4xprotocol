@@ -4,8 +4,9 @@ set -e
 
 source ./dump_clones.sh
 
-trap 'kill $BGPID; echo " Stopping solana-test-validator"; exit' SIGINT SIGTERM
+trap 'kill $BGPID; echo " Stopping solana-test-validator"; exit' SIGINT SIGTERM ERR
 
+echo "[Build]"
 anchor build
 
 # shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL
@@ -25,7 +26,9 @@ BGPID=$!
 
 ./wait_for_port.sh 8899
 
+echo "[Deploy]"
 anchor deploy --program-name perpetuals --program-keypair prog_id.json
+echo "[IDL init]"
 anchor idl init --filepath ./target/idl/perpetuals.json $(solana-keygen pubkey prog_id.json)
 
 pushd app
