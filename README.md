@@ -27,13 +27,19 @@ Rustfmt is used to format the code. It requires `nightly` features to be activat
 
 Steps to quickly start local validator and update oracle data
 ```sh
-./dump_clones.sh
+docker build --progress plain --tag perps .
+docker run -ti -p 8899:8899 --entrypoint /bin/bash perps
+# Inside docker
 ./init.sh
 
+# Outside
+cd app
 npx ts-node src/cli.ts --url http://localhost:8899 -k /home/zotho/.config/solana/id.json updateOracle J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix
+cd ..
 
 cd ui
-yarn dev
+cp .env.local.example .env.local
+yarn run dev
 ```
 
 ### Build

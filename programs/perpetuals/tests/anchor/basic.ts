@@ -481,6 +481,8 @@ describe("perpetuals", () => {
       cumulativeInterestSnapshot: "0",
       lockedAmount: "7000000000",
       collateralAmount: "1000000000",
+      stopLoss: "0",
+      takeProfit: "0",
       bump: position.bump,
     };
 
