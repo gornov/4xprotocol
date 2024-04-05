@@ -67,7 +67,15 @@ export class ViewHelper {
     transaction: Transaction
   ): Promise<RpcResponseAndContext<SimulatedTransactionResponse>> => {
     transaction.feePayer = DEFAULT_PERPS_USER.publicKey;
-    return this.connection.simulateTransaction(transaction);
+        return this.connection.simulateTransaction(transaction)
+      .then(result => {
+        if (result.value.err) {
+          console.error("err", JSON.stringify(result.value.err, null, 2));
+        }
+        console.log("logs", JSON.stringify(result.value.logs, null, 2));
+        return result;
+      });
+    // return this.connection.simulateTransaction(transaction);
   };
 
   decodeLogs<T>(

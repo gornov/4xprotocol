@@ -35,6 +35,7 @@ pub mod open_position;
 pub mod remove_collateral;
 pub mod remove_liquidity;
 pub mod swap;
+pub mod trigger_position;
 
 // bring everything in scope
 pub use {

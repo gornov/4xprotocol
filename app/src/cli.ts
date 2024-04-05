@@ -2,6 +2,7 @@
 
 import { BN } from "@project-serum/anchor";
 import { PublicKey, Transaction, TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
+import * as spl from "@solana/spl-token";
 import { PerpetualsClient, PositionSide } from "./client";
 import { Command } from "commander";
 
@@ -20,7 +21,7 @@ async function updateOracle(address: PublicKey[]) {
     new TransactionInstruction({
       data: buf,
       programId: new PublicKey("shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL"),
-      keys: [{pubkey: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"), isSigner: false, isWritable: true}],
+      keys: [{ pubkey: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"), isSigner: false, isWritable: true }],
     })
   )
   let blockhash = (await client.provider.connection.getLatestBlockhash('finalized')).blockhash;
@@ -151,7 +152,7 @@ async function addCustody(
   if (pool == undefined) {
     pool = await client.getPool(poolName); // Unhandled error
   }
-  
+
   pool.ratios.push({
     target: new BN(5000),
     min: new BN(10),
@@ -171,7 +172,7 @@ async function addCustody(
     "borrowRate", JSON.stringify(borrowRate, null, 2), "\n",
     "ratios", ratios, "\n",
   );
-  client.addCustody(
+  await client.addCustody(
     poolName,
     tokenMint,
     isStable,
@@ -202,6 +203,114 @@ async function removeCustody(poolName: string, tokenMint: PublicKey) {
 
 async function upgradeCustody(poolName: string, tokenMint: PublicKey) {
   client.upgradeCustody(poolName, tokenMint);
+}
+
+async function addLiquidity(
+  poolName: string,
+  tokenMint: PublicKey,
+  amountIn: BN,
+) {
+  const minLpAmountOut = new BN(1);
+
+  let fundingAccount = await spl.getOrCreateAssociatedTokenAccount(
+    client.provider.connection,
+    client.admin,
+    tokenMint,
+    client.admin.publicKey,
+  );
+  console.log("fundingAccount", fundingAccount);
+
+  const lpTokenMint = client.getPoolLpTokenKey(poolName);
+  let lpTokenAccount = await spl.getOrCreateAssociatedTokenAccount(
+    client.provider.connection,
+    client.admin,
+    lpTokenMint,
+    client.admin.publicKey,
+  );
+  console.log("lpTokenAccount", lpTokenAccount);
+
+  await client.addLiquidity(
+    amountIn,
+    minLpAmountOut,
+    fundingAccount.address,
+    lpTokenAccount.address,
+    poolName,
+    tokenMint,
+  )
+}
+
+async function liquidate(
+  poolName: string,
+  tokenMint: PublicKey,
+  owner: PublicKey,
+  side: PositionSide,
+) {
+  let position = await client.getUserPosition(owner, poolName, tokenMint, side);
+
+  let userTokenAccount = (
+    await spl.getOrCreateAssociatedTokenAccount(
+      client.provider.connection,
+      client.admin,
+      tokenMint,
+      position.owner
+    )
+  ).address;
+
+  let rewardReceivingAccount = (
+    await spl.getOrCreateAssociatedTokenAccount(
+      client.provider.connection,
+      client.admin,
+      tokenMint,
+      client.admin.publicKey
+    )
+  ).address;
+
+  await client.liquidate(
+    position.owner,
+    poolName,
+    tokenMint,
+    side,
+    userTokenAccount,
+    rewardReceivingAccount,
+  )
+}
+
+async function triggerPosition(
+  poolName: string,
+  tokenMint: PublicKey,
+  owner: PublicKey,
+  side: PositionSide,
+  price: BN,
+) {
+  let position = await client.getUserPosition(owner, poolName, tokenMint, side);
+
+  let userTokenAccount = (
+    await spl.getOrCreateAssociatedTokenAccount(
+      client.provider.connection,
+      client.admin,
+      tokenMint,
+      position.owner
+    )
+  ).address;
+
+  let rewardReceivingAccount = (
+    await spl.getOrCreateAssociatedTokenAccount(
+      client.provider.connection,
+      client.admin,
+      tokenMint,
+      client.admin.publicKey
+    )
+  ).address;
+
+  await client.triggerPosition(
+    position.owner,
+    poolName,
+    tokenMint,
+    side,
+    userTokenAccount,
+    rewardReceivingAccount,
+    price,
+  )
 }
 
 async function getUserPosition(
@@ -367,7 +476,7 @@ async function getAum(poolName: string) {
       client.log("Done");
     });
 
-    program
+  program
     .command("updateOracle")
     .description("updateOracle")
     .argument("<pubkey...>", "Admin public keys")
@@ -495,6 +604,50 @@ async function getAum(poolName: string) {
     .argument("<pubkey>", "Token mint")
     .action(async (poolName, tokenMint, options) => {
       await upgradeCustody(poolName, new PublicKey(tokenMint));
+    });
+
+  program
+    .command("liquidate")
+    .description("Liquidate position")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .argument("<pubkey>", "Owner")
+    .argument("<string>", "Side")
+    .action(async (poolName, tokenMint, owner, side, rewardReceivingAccount, options) => {
+      await liquidate(
+        poolName,
+        new PublicKey(tokenMint),
+        new PublicKey(owner),
+        side,
+      );
+    });
+
+  program
+    .command("trigger-position")
+    .description("Trigger position")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .argument("<pubkey>", "Owner")
+    .argument("<string>", "Side")
+    .requiredOption("-p, --price <bigint>", "Price")
+    .action(async (poolName, tokenMint, owner, side, rewardReceivingAccount, options) => {
+      await triggerPosition(
+        poolName,
+        new PublicKey(tokenMint),
+        new PublicKey(owner),
+        side,
+        new BN(options.price),
+      );
+    });
+
+  program
+    .command("add-liquidity")
+    .description("Add liquidity to custody")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .requiredOption("-a, --amount <bigint>", "Token amount")
+    .action(async (poolName, tokenMint, options) => {
+      await addLiquidity(poolName, new PublicKey(tokenMint), new BN(options.amount));
     });
 
   program

@@ -125,8 +125,15 @@ export class PerpetualsClient {
   };
 
   getCustodyKey = (poolName: string, tokenMint: PublicKey) => {
+    if (typeof poolName !== "string") {
+      throw Error(`Wrong type ${typeof poolName}`);
+    }
+    if (!(tokenMint instanceof PublicKey)) {
+      throw Error(`Wrong type ${tokenMint}`);
+    }
+    const poolKey = this.getPoolKey(poolName);
     return this.findProgramAddress("custody", [
-      this.getPoolKey(poolName),
+      poolKey,
       tokenMint,
     ]).publicKey;
   };
@@ -161,22 +168,18 @@ export class PerpetualsClient {
   getCustodies = async (poolName: string) => {
     //return this.program.account.custody.all();
     let pool = await this.getPool(poolName);
-    return this.program.account.custody.fetchMultiple(
-      pool.tokens.map((t) => t.custody)
-    );
+    return this.program.account.custody.fetchMultiple(pool.custodies);
   };
 
   getCustodyMetas = async (poolName: string) => {
     let pool = await this.getPool(poolName);
-    let custodies = await this.program.account.custody.fetchMultiple(
-      pool.tokens.map((t) => t.custody)
-    );
+    let custodies = await this.program.account.custody.fetchMultiple(pool.custodies);
     let custodyMetas = [];
-    for (const token of pool.tokens) {
+    for (const custody of pool.custodies) {
       custodyMetas.push({
         isSigner: false,
         isWritable: false,
-        pubkey: token.custody,
+        pubkey: custody,
       });
     }
     for (const custody of custodies) {
@@ -474,6 +477,47 @@ export class PerpetualsClient {
       });
   };
 
+  addLiquidity = async (
+    amountIn: BN,
+    minLpAmountOut: BN,
+    fundingAccount: PublicKey,
+    lpTokenAccount: PublicKey,
+    poolName: string,
+    tokenMint: PublicKey,
+  ) => {
+    await this.program.methods
+      .addLiquidity({
+        amountIn,
+        minLpAmountOut,
+      })
+      .accounts({
+        owner: this.admin.publicKey,
+        fundingAccount,
+        lpTokenAccount,
+        transferAuthority: this.authority.publicKey,
+        perpetuals: this.perpetuals.publicKey,
+        pool: this.getPoolKey(poolName),
+        custody: this.getCustodyKey(poolName, tokenMint),
+        custodyOracleAccount: await this.getCustodyOracleAccountKey(
+          poolName,
+          tokenMint
+        ),
+        custodyTokenAccount: this.getCustodyTokenAccountKey(
+          poolName,
+          tokenMint
+        ),
+        lpTokenMint: this.getPoolLpTokenKey(poolName),
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .remainingAccounts(await this.getCustodyMetas(poolName))
+      .signers([this.admin])
+      .rpc()
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
+  };
+
   liquidate = async (
     wallet: PublicKey,
     poolName: string,
@@ -488,6 +532,43 @@ export class PerpetualsClient {
         signer: this.provider.wallet.publicKey,
         receivingAccount,
         rewardsReceivingAccount,
+        transferAuthority: this.authority.publicKey,
+        perpetuals: this.perpetuals.publicKey,
+        pool: this.getPoolKey(poolName),
+        position: this.getPositionKey(wallet, poolName, tokenMint, side),
+        custody: this.getCustodyKey(poolName, tokenMint),
+        custodyOracleAccount: await this.getCustodyOracleAccountKey(
+          poolName,
+          tokenMint
+        ),
+        custodyTokenAccount: this.getCustodyTokenAccountKey(
+          poolName,
+          tokenMint
+        ),
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc()
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
+  };
+
+  triggerPosition = async (
+    wallet: PublicKey,
+    poolName: string,
+    tokenMint: PublicKey,
+    side: PositionSide,
+    receivingAccount: PublicKey,
+    rewardsReceivingAccount: PublicKey,
+    price: BN,
+  ) => {
+    return await this.program.methods
+      .triggerPosition({price})
+      .accounts({
+        signer: this.provider.wallet.publicKey,
+        receivingAccount,
+        // rewardsReceivingAccount,
         transferAuthority: this.authority.publicKey,
         perpetuals: this.perpetuals.publicKey,
         pool: this.getPoolKey(poolName),
