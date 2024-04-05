@@ -26,20 +26,51 @@ Rustfmt is used to format the code. It requires `nightly` features to be activat
 ### Auto setup
 
 Steps to quickly start local validator and update oracle data
+
+Get Solana CLI v1.14.3
+```sh
+sh -c "$(curl -sSfL https://release.solana.com/v1.14.13/install)"
+solana --version
+# solana-cli 1.14.13 (src:0a3e52ba; feat:627291041)
+
+# Set proper solana network: localhost, devnet, testnet, mainnet
+solana config set --url devnet
+
+# Generate your personal wallet
+solana-keygen new
+
+# Generate key for Perpetuals program (ask for key file instead)
+# solana-keygen new -o prog_id.json
+
+# Airdrop tokens
+solana airdrop 5
+
+# Transfer if needed
+solana transfer --allow-unfunded-recipient <ADDRESS> <AMOUNT>
+```
+
+Build and run docker image:
 ```sh
 docker build --progress plain --tag perps .
 docker run -ti -p 8899:8899 --entrypoint /bin/bash perps
 # Inside docker
 ./init.sh
+```
 
-# Outside
+Start UI:
+```sh
+cd ui
+cp .env.local.example .env.local
+# Set proper `NEXT_PUBLIC_SOLANA_RPC_URL` in `.env.local` (devnet by default)
+yarn run dev
+cd ..
+```
+
+Update oracle price (if needed)
+```sh
 cd app
 npx ts-node src/cli.ts --url http://localhost:8899 -k /home/zotho/.config/solana/id.json updateOracle J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix
 cd ..
-
-cd ui
-cp .env.local.example .env.local
-yarn run dev
 ```
 
 ### Build
