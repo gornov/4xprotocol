@@ -30,9 +30,17 @@ export async function getPositionData(
 ): Promise<PositionRequest> {
   let { perpetual_program } = await getPerpetualProgramAndProvider();
 
-  // @ts-ignore
-  let fetchedPositions: FetchPosition[] =
-    await perpetual_program.account.position.all();
+  let fetchedPositions: FetchPosition[];
+  try {
+    // TODO: update dataSize according to `getProgramAccounts` output.
+    // This is workaround for migration
+    // @ts-ignore
+    fetchedPositions = await perpetual_program.account.position.all([{dataSize: 232}]);
+  } catch (error) {
+    console.error("Error: fetchedPositions", error);
+    fetchedPositions = [];
+  }
+  console.log("fetchedPositions", fetchedPositions);
 
   let positionInfos: Record<string, PositionAccount> = fetchedPositions.reduce(
     (acc: Record<string, PositionAccount>, position: FetchPosition) => (

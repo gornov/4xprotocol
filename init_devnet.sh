@@ -7,7 +7,12 @@ anchor deploy --provider.cluster devnet \
     --program-name perpetuals \
     --program-keypair prog_id.json
 
-anchor idl init --provider.cluster devnet \
+# First time
+# anchor idl init --provider.cluster devnet \
+#     --filepath ./target/idl/perpetuals.json \
+#     $(solana-keygen pubkey prog_id.json)
+
+anchor idl upgrade --provider.cluster devnet \
     --filepath ./target/idl/perpetuals.json \
     $(solana-keygen pubkey prog_id.json)
 
