@@ -23,6 +23,9 @@ export class PositionAccount {
   public lockedAmount: BN;
   public collateralAmount: BN;
 
+  public stopLoss: BN | null;
+  public takeProfit: BN | null;
+
   public token: TokenE;
   public address: PublicKey;
   public oracleAccount: PublicKey;
@@ -50,6 +53,9 @@ export class PositionAccount {
     this.cumulativeInterestSnapshot = position.cumulativeInterestSnapshot;
     this.lockedAmount = position.lockedAmount;
     this.collateralAmount = position.collateralAmount;
+
+    this.stopLoss = position.stopLoss;
+    this.takeProfit = position.takeProfit;
 
     this.token = custodies[this.custody.toString()]?.getTokenE()!;
     this.address = address;

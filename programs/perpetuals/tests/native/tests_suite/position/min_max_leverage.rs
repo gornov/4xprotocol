@@ -135,6 +135,8 @@ pub async fn min_max_leverage() {
             collateral: utils::scale(1, ETH_DECIMALS),
             size: utils::scale(10, ETH_DECIMALS),
             side: Side::Long,
+            stop_loss: None,
+            take_profit: None,
         },
     )
     .await
@@ -153,6 +155,8 @@ pub async fn min_max_leverage() {
             collateral: utils::scale(1, ETH_DECIMALS),
             size: utils::scale_f64(0.5, ETH_DECIMALS),
             side: Side::Long,
+            stop_loss: None,
+            take_profit: None,
         },
     )
     .await

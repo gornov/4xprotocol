@@ -132,6 +132,8 @@ pub async fn max_user_profit() {
             collateral: utils::scale(1, ETH_DECIMALS),
             size: utils::scale(5, ETH_DECIMALS),
             side: Side::Long,
+            stop_loss: None,
+            take_profit: None,
         },
     )
     .await

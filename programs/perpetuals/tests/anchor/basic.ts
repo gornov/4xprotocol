@@ -457,6 +457,8 @@ describe("perpetuals", () => {
       tc.toTokenAmount(1, tc.custodies[0].decimals),
       tc.toTokenAmount(7, tc.custodies[0].decimals),
       "long",
+      null,
+      null,
       tc.users[0],
       tc.users[0].tokenAccounts[0],
       tc.users[0].positionAccountsLong[0],
@@ -481,8 +483,8 @@ describe("perpetuals", () => {
       cumulativeInterestSnapshot: "0",
       lockedAmount: "7000000000",
       collateralAmount: "1000000000",
-      stopLoss: "0",
-      takeProfit: "0",
+      stopLoss: null,
+      takeProfit: null,
       bump: position.bump,
     };
 
@@ -528,6 +530,8 @@ describe("perpetuals", () => {
       tc.toTokenAmount(1, tc.custodies[0].decimals),
       tc.toTokenAmount(7, tc.custodies[0].decimals),
       "long",
+      null,
+      null,
       tc.users[0],
       tc.users[0].tokenAccounts[0],
       tc.users[0].positionAccountsLong[0],

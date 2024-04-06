@@ -186,6 +186,8 @@ pub async fn basic_interactions() {
                 collateral: utils::scale_f64(0.1, ETH_DECIMALS),
                 size: utils::scale_f64(0.1, ETH_DECIMALS),
                 side: Side::Long,
+                stop_loss: None,
+                take_profit: None,
             },
         )
         .await

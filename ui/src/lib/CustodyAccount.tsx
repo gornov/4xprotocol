@@ -55,7 +55,6 @@ export class CustodyAccount {
     this.fees = custody.fees;
     this.borrowRate = custody.borrowRate;
 
-    console.log("custody assets", custody.assets);
     this.assets = custody.assets;
     this.collectedFees = custody.collectedFees;
     this.volumeStats = custody.volumeStats;

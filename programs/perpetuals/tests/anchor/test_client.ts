@@ -839,6 +839,8 @@ export class TestClient {
     collateral: typeof BN,
     size: typeof BN,
     side: PositionSide,
+    stopLoss: typeof BN | null,
+    takeProfit: typeof BN | null,
     user,
     fundingAccount: PublicKey,
     positionAccount: PublicKey,
@@ -851,6 +853,8 @@ export class TestClient {
           collateral,
           size,
           side: side === "long" ? { long: {} } : { short: {} },
+          stopLoss,
+          takeProfit,
         })
         .accounts({
           owner: user.wallet.publicKey,

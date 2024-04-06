@@ -25,6 +25,7 @@ export async function getPoolData(
     console.warn("error", error);
     fetchedPools = [];
   }
+  console.log("fetchedPools", JSON.stringify(fetchedPools, null, 2));
 
   let poolObjs: Record<string, PoolAccount> = {};
 
@@ -70,7 +71,7 @@ export async function getPoolData(
             );
             loopStatus = false;
           } catch (error) {
-            console.log("error", error);
+            console.log("error", error, "getAssetsUnderManagement", pool.publicKey.toString());
           }
         }
 

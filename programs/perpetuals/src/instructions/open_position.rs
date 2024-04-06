@@ -98,6 +98,8 @@ pub struct OpenPositionParams {
     pub collateral: u64,
     pub size: u64,
     pub side: Side,
+    pub stop_loss: Option<u64>,
+    pub take_profit: Option<u64>,
 }
 
 pub fn open_position(ctx: Context<OpenPosition>, params: &OpenPositionParams) -> Result<()> {
@@ -197,6 +199,10 @@ pub fn open_position(ctx: Context<OpenPosition>, params: &OpenPositionParams) ->
     )?)?;
 
     position.collateral_amount = params.collateral;
+
+    position.stop_loss = params.stop_loss;
+    position.take_profit = params.take_profit;
+
     position.bump = *ctx
         .bumps
         .get("position")

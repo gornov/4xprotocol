@@ -182,6 +182,9 @@ export interface Position {
   cumulativeInterestSnapshot: BN;
   lockedAmount: BN;
   collateralAmount: BN;
+
+  stopLoss: BN | null;
+  takeProfit: BN | null;
 }
 
 export interface PriceStat {
