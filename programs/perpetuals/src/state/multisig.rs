@@ -36,6 +36,7 @@ pub enum AdminInstruction {
     SetTestOraclePrice,
     SetTestTime,
     UpgradeCustody,
+    UpgradePosition,
 }
 
 impl Multisig {

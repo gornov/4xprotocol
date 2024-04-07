@@ -420,6 +420,7 @@ impl Pool {
     ) -> Result<u64> {
         let (profit_usd, loss_usd, _) =
             self.get_pnl_usd(position, token_price, token_price, custody, curtime, false)?;
+        msg!("profit_usd: {profit_usd}, loss_usd: {loss_usd}, collateral_usd: {}", position.collateral_usd);
 
         let current_margin_usd = if profit_usd > 0 {
             math::checked_add(position.collateral_usd, profit_usd)?
@@ -428,6 +429,7 @@ impl Pool {
         } else {
             0
         };
+        msg!("current_margin_usd: {current_margin_usd}");
 
         if current_margin_usd > 0 {
             math::checked_as_u64(math::checked_div(
@@ -450,10 +452,26 @@ impl Pool {
     ) -> Result<bool> {
         let current_leverage = self.get_leverage(position, token_price, custody, curtime)?;
 
-        Ok(current_leverage <= custody.pricing.max_leverage
-            && (!initial
-                || (current_leverage >= custody.pricing.min_initial_leverage
-                    && current_leverage <= custody.pricing.max_initial_leverage)))
+        let fit_max_leverage = current_leverage <= custody.pricing.max_leverage;
+        if !fit_max_leverage {
+            msg!(
+                "Doesn't fit max_leverage: leverage <= max_leverage: {current_leverage} > {}",
+                custody.pricing.max_leverage
+            );
+        }
+
+        let fit_initial_leverage = current_leverage >= custody.pricing.min_initial_leverage
+            && current_leverage <= custody.pricing.max_initial_leverage;
+        if !fit_initial_leverage {
+            msg!(
+                "Doesn't fit initial_leverage: min_initial_leverage <= leverage <= max_initial_leverage: {} > {} > {}",
+                custody.pricing.min_initial_leverage,
+                current_leverage,
+                custody.pricing.max_initial_leverage,
+            );
+        }
+
+        Ok(fit_max_leverage && (!initial || fit_initial_leverage))
     }
 
     pub fn get_liquidation_price(

@@ -477,6 +477,25 @@ export class PerpetualsClient {
       });
   };
 
+  upgradePosition = async (poolName: string, tokenMint: PublicKey, position: PublicKey) => {
+    console.log("position", position.toString());
+    await this.program.methods
+      .upgradePosition({})
+      .accounts({
+        admin: this.admin.publicKey,
+        multisig: this.multisig.publicKey,
+        pool: this.getPoolKey(poolName),
+        position,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([this.admin])
+      .rpc()
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
+  };
+
   addLiquidity = async (
     amountIn: BN,
     minLpAmountOut: BN,
@@ -564,7 +583,7 @@ export class PerpetualsClient {
     price: BN,
   ) => {
     return await this.program.methods
-      .triggerPosition({price})
+      .triggerPosition({ price })
       .accounts({
         signer: this.provider.wallet.publicKey,
         receivingAccount,

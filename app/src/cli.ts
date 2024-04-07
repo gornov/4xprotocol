@@ -103,8 +103,8 @@ async function addCustody(
     maxLeverage: new BN(1000000),
     maxPayoffMult: new BN(10000),
     maxUtilization: new BN(10000),
-    maxPositionLockedUsd: new BN(1000000000),
-    maxTotalLockedUsd: new BN(1000000000),
+    maxPositionLockedUsd: new BN(10000000000), // $10_000
+    maxTotalLockedUsd: new BN(100000000000), // $100_000
   };
   let permissions = {
     allowSwap: true,
@@ -198,11 +198,20 @@ async function removeCustody(poolName: string, tokenMint: PublicKey) {
   (pool.ratios as any).pop();
   let ratios = client.adjustTokenRatios(pool.ratios);
 
-  client.removeCustody(poolName, tokenMint, ratios);
+  await client.removeCustody(poolName, tokenMint, ratios);
 }
 
 async function upgradeCustody(poolName: string, tokenMint: PublicKey) {
-  client.upgradeCustody(poolName, tokenMint);
+  await client.upgradeCustody(poolName, tokenMint);
+}
+
+async function upgradePosition(poolName: string, tokenMint: PublicKey, owner: PublicKey, side: PositionSide) {
+  const position = client.getPositionKey(owner, poolName, tokenMint, side);
+  await client.upgradePosition(poolName, tokenMint, position);
+}
+
+async function upgradePositionByKey(poolName: string, tokenMint: PublicKey, position: PublicKey) {
+  await client.upgradePosition(poolName, tokenMint, position);
 }
 
 async function addLiquidity(
@@ -607,6 +616,30 @@ async function getAum(poolName: string) {
     });
 
   program
+    .command("upgrade-position")
+    .description("Upgrade deprecated position to the new version")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .argument("<pubkey>", "Owner")
+    .argument("<string>", "Side")
+    .action(async (poolName, tokenMint, owner, side, options) => {
+      if (side !== "long" && side !== "short") {
+        throw Error(`Unexpected side: ${side}. Expected: long | short`)
+      }
+      await upgradePosition(poolName, new PublicKey(tokenMint), new PublicKey(owner), side);
+    });
+
+  program
+    .command("upgrade-position-by-key")
+    .description("Upgrade deprecated position to the new version")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .argument("<pubkey>", "Position")
+    .action(async (poolName, tokenMint, position, options) => {
+      await upgradePositionByKey(poolName, new PublicKey(tokenMint), new PublicKey(position));
+    });
+
+  program
     .command("liquidate")
     .description("Liquidate position")
     .argument("<string>", "Pool name")
@@ -629,6 +662,7 @@ async function getAum(poolName: string) {
     .argument("<pubkey>", "Token mint")
     .argument("<pubkey>", "Owner")
     .argument("<string>", "Side")
+    .argument("<pubkey>", "rewardReceivingAccount")
     .requiredOption("-p, --price <bigint>", "Price")
     .action(async (poolName, tokenMint, owner, side, rewardReceivingAccount, options) => {
       await triggerPosition(

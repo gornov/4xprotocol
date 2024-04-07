@@ -105,6 +105,13 @@ pub mod perpetuals {
         instructions::upgrade_custody(ctx, &params)
     }
 
+    pub fn upgrade_position<'info>(
+        ctx: Context<'_, '_, '_, 'info, UpgradePosition<'info>>,
+        params: UpgradePositionParams,
+    ) -> Result<u8> {
+        instructions::upgrade_position(ctx, &params)
+    }
+
     // test instructions
 
     pub fn test_init(ctx: Context<TestInit>, params: TestInitParams) -> Result<()> {
@@ -163,6 +170,13 @@ pub mod perpetuals {
 
     pub fn liquidate(ctx: Context<Liquidate>, params: LiquidateParams) -> Result<()> {
         instructions::liquidate(ctx, &params)
+    }
+
+    pub fn trigger_position(
+        ctx: Context<TriggerPosition>,
+        params: TriggerPositionParams,
+    ) -> Result<()> {
+        instructions::trigger_position(ctx, &params)
     }
 
     pub fn get_add_liquidity_amount_and_fee(

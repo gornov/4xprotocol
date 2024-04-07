@@ -35,12 +35,29 @@ export async function getPositionData(
     // TODO: update dataSize according to `getProgramAccounts` output.
     // This is workaround for migration
     // @ts-ignore
-    fetchedPositions = await perpetual_program.account.position.all([{dataSize: 232}]);
+    fetchedPositions = await perpetual_program.account.position.all([{ dataSize: 232 }]);
   } catch (error) {
     console.error("Error: fetchedPositions", error);
     fetchedPositions = [];
   }
   console.log("fetchedPositions", fetchedPositions);
+
+  
+  fetchedPositions.map(pos => {
+    // Raw subscribe
+    perpetual_program.provider.connection.onAccountChange(
+      pos.publicKey,
+      (accountInfo, ctx) => {
+        console.log("Event: onAccountChange", accountInfo, ctx);
+      }
+    )
+
+    // Anchor subscribe
+    let emitter = perpetual_program.account.position.subscribe(pos.publicKey);
+    emitter.on("change", (newPosition) => {
+      console.log("Event: change", pos.publicKey.toString(), newPosition);
+    });
+  });
 
   let positionInfos: Record<string, PositionAccount> = fetchedPositions.reduce(
     (acc: Record<string, PositionAccount>, position: FetchPosition) => (

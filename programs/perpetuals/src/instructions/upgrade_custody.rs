@@ -118,6 +118,7 @@ pub fn upgrade_custody<'info>(
         return Err(ProgramError::IllegalOwner.into());
     }
     if custody_account.try_data_len()? != DeprecatedCustody::LEN {
+        msg!("InvalidAccountData account data len is unexpected: {} != {}", custody_account.try_data_len()?, DeprecatedCustody::LEN);
         return Err(ProgramError::InvalidAccountData.into());
     }
     let deprecated_custody = Account::<DeprecatedCustody>::try_from_unchecked(custody_account)?;

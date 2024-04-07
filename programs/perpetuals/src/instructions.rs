@@ -8,6 +8,7 @@ pub mod set_admin_signers;
 pub mod set_custody_config;
 pub mod set_permissions;
 pub mod upgrade_custody;
+pub mod upgrade_position;
 pub mod withdraw_fees;
 pub mod withdraw_sol_fees;
 
@@ -46,6 +47,6 @@ pub use {
     get_remove_liquidity_amount_and_fee::*, get_swap_amount_and_fees::*, init::*, liquidate::*,
     open_position::*, remove_collateral::*, remove_custody::*, remove_liquidity::*, remove_pool::*,
     set_admin_signers::*, set_custody_config::*, set_permissions::*, set_test_oracle_price::*,
-    set_test_time::*, swap::*, test_init::*, upgrade_custody::*, withdraw_fees::*,
-    withdraw_sol_fees::*,
+    set_test_time::*, swap::*, test_init::*, trigger_position::*, upgrade_custody::*,
+    upgrade_position::*, withdraw_fees::*, withdraw_sol_fees::*,
 };

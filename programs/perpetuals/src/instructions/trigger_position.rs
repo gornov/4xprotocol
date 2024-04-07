@@ -94,11 +94,14 @@ pub struct TriggerPositionParams {
     pub price: u64,
 }
 
-pub fn trigger_position(ctx: Context<TriggerPosition>, params: &TriggerPositionParams) -> Result<()> {
+pub fn trigger_position(
+    ctx: Context<TriggerPosition>,
+    params: &TriggerPositionParams,
+) -> Result<()> {
     // check permissions
     msg!("Check permissions");
-    let perpetuals = ctx.accounts.perpetuals.as_mut();
-    let custody = ctx.accounts.custody.as_mut();
+    let perpetuals = ctx.accounts.perpetuals.as_ref();
+    let custody = ctx.accounts.custody.as_ref();
     require!(
         perpetuals.permissions.allow_close_position && custody.permissions.allow_close_position,
         PerpetualsError::InstructionNotAllowed
@@ -109,8 +112,8 @@ pub fn trigger_position(ctx: Context<TriggerPosition>, params: &TriggerPositionP
     if params.price == 0 {
         return Err(ProgramError::InvalidArgument.into());
     }
-    let position = ctx.accounts.position.as_mut();
-    let pool = ctx.accounts.pool.as_mut();
+    let position = ctx.accounts.position.as_ref();
+    let pool = ctx.accounts.pool.as_ref();
 
     // compute exit price
     let curtime = perpetuals.get_time()?;
@@ -157,6 +160,50 @@ pub fn trigger_position(ctx: Context<TriggerPosition>, params: &TriggerPositionP
     msg!("Net profit: {}, loss: {}", profit_usd, loss_usd);
     msg!("Collected fee: {}", fee_amount);
     msg!("Amount out: {}", transfer_amount);
+
+    let stop_loss_triggerred = position
+        .stop_loss
+        .map(|stop_loss| loss_usd >= stop_loss)
+        .unwrap_or(false);
+    if stop_loss_triggerred {
+        msg!(
+            "Stop loss triggered: loss_usd >= stop_loss: {} >= {}",
+            loss_usd,
+            position.stop_loss.unwrap()
+        );
+    }
+
+    let take_profit_triggered = position
+        .take_profit
+        .map(|take_profit| profit_usd >= take_profit)
+        .unwrap_or(false);
+    if take_profit_triggered {
+        msg!(
+            "Take profit triggered: profit_usd >= take_profit: {} >= {}",
+            profit_usd,
+            position.take_profit.unwrap()
+        );
+    }
+
+    if !stop_loss_triggerred && !take_profit_triggered {
+        msg!(
+            "Limits not triggered: loss_usd < stop_loss: {} < {:?}",
+            loss_usd,
+            position.stop_loss
+        );
+        msg!(
+            "Limits not triggered: profit_usd < take_profit: {} < {:?}",
+            profit_usd,
+            position.take_profit
+        );
+        return Err(error!(PerpetualsError::LimitNotTriggered));
+    }
+
+    // Start mutating accounts
+    let perpetuals = ctx.accounts.perpetuals.as_mut();
+    let custody = ctx.accounts.custody.as_mut();
+    let position = ctx.accounts.position.as_mut();
+    let pool = ctx.accounts.pool.as_mut();
 
     // unlock pool funds
     custody.unlock_funds(position.locked_amount)?;
