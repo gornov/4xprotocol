@@ -72,13 +72,27 @@ If position owner is: `HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu`. And closin
 
 URL is `https://api.devnet.solana.com` or `http://localhost:8899`:
 ```sh
-npx ts-node src/cli.ts --url http://localhost:8899 -k ~/.config/solana/id.json trigger-position TestPool1 So11111111111111111111111111111111111111112 HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu long HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu -p 179661917
+cd app
+npx ts-node src/cli.ts \
+  --url http://localhost:8899 \
+  -k ~/.config/solana/id.json trigger-position \
+  TestPool1 \
+  So11111111111111111111111111111111111111112 \
+  HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
+  long \
+  HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
+  -p 179661917
+cd ..
 ```
 
 Update oracle price (if needed)
 ```sh
 cd app
-npx ts-node src/cli.ts --url http://localhost:8899 -k ~/.config/solana/id.json updateOracle J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix
+npx ts-node src/cli.ts \
+  --url http://localhost:8899 \
+  -k ~/.config/solana/id.json \
+  updateOracle \
+  J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix
 cd ..
 ```
 
