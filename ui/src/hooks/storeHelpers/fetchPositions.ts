@@ -42,6 +42,13 @@ export async function getPositionData(
   }
   console.log("fetchedPositions", fetchedPositions);
 
+  try {
+    const allRawPositions = await perpetual_program.account.position.all();
+    console.info("allRawPositions", allRawPositions);
+  } catch {
+    console.error("Some positions can't be deserialized");
+  }
+
   
   fetchedPositions.map(pos => {
     // Raw subscribe

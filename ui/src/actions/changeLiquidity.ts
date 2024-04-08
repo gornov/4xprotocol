@@ -142,6 +142,8 @@ export async function changeLiquidity(
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .remainingAccounts(pool.getCustodyMetas());
+  } else {
+    throw Error(`Unexpected tab position: ${tab}`);
   }
 
   console.log("before pre");

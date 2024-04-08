@@ -28,9 +28,16 @@ import {
 import JSBI from "jsbi";
 import fetch from "node-fetch";
 import { sha256 } from "js-sha256";
-import { encode } from "bs58";
 import { readFileSync } from "fs";
 import { resolveOrCreateAssociatedTokenAddress } from "@orca-so/sdk";
+
+export const log = (message: string) => {
+  const date = new Date();
+  const date_str = date.toDateString();
+  const time = date.toLocaleTimeString(undefined, { hour12: false });
+  const ms = date.getMilliseconds().toString().padStart(3, "0");
+  console.log(`[${date_str} ${time}.${ms}] ${message}`);
+};
 
 export type PositionSide = "long" | "short";
 
@@ -263,6 +270,21 @@ export class PerpetualsClient {
   };
 
   getAllPositions = async () => {
+    const rawAccounts = await this.provider.connection.getProgramAccounts(
+      this.program.programId,
+      {
+        encoding: "base64",
+        filters: [
+          { memcmp: { offset: 0, bytes: "VZMoMoKgZQb" } },
+        ],
+      },
+    );
+    // console.log("rawAccounts", rawAccounts);
+    console.log("rawAccounts", rawAccounts.map(a => a.pubkey.toString()));
+    // console.log(
+    //   "rawAccounts",
+    //   rawAccounts.map(a => a.account.data.subarray(0, 8).toString('hex')).sort((a, b) => a > b ? 1 : (a < b) ? -1 : 0),
+    // );
     return this.program.account.position.all();
   };
 
@@ -271,10 +293,7 @@ export class PerpetualsClient {
   };
 
   log = (message: string) => {
-    let date = new Date();
-    let date_str = date.toDateString();
-    let time = date.toLocaleTimeString();
-    console.log(`[${date_str} ${time}] ${message}`);
+    log(message);
   };
 
   prettyPrint = (object: object) => {

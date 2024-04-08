@@ -5,6 +5,9 @@ import { PublicKey, Transaction, TransactionInstruction, sendAndConfirmTransacti
 import * as spl from "@solana/spl-token";
 import { PerpetualsClient, PositionSide } from "./client";
 import { Command } from "commander";
+import { readFileSync } from 'fs';
+import path from 'path';
+import YAML from 'yaml';
 
 let client: PerpetualsClient;
 
@@ -21,7 +24,11 @@ async function updateOracle(address: PublicKey[]) {
     new TransactionInstruction({
       data: buf,
       programId: new PublicKey("shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL"),
-      keys: [{ pubkey: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"), isSigner: false, isWritable: true }],
+      keys: [{
+        pubkey: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+        isSigner: false,
+        isWritable: true,
+      }],
     })
   )
   let blockhash = (await client.provider.connection.getLatestBlockhash('finalized')).blockhash;
@@ -468,17 +475,35 @@ async function getAum(poolName: string) {
     .name("cli.ts")
     .description("CLI to Solana Perpetuals Exchange Program")
     .version("0.1.0")
-    .option(
-      "-u, --url <string>",
-      "URL for Solana's JSON RPC",
-      "https://api.devnet.solana.com"
-    )
-    .requiredOption("-k, --keypair <path>", "Filepath to the admin keypair")
+    .option("-u, --url <string>", "URL for Solana's JSON RPC")
+    .option("-k, --keypair <path>", "Filepath to the admin keypair")
     .hook("preSubcommand", (thisCommand, subCommand) => {
-      if (!program.opts().keypair) {
+      let defaultKeypair;
+      let defaultUrl;
+
+      try {
+        const solanaConfigFile = readFileSync(
+          path.join(process.env.HOME, ".config/solana/cli/config.yml"),
+          "utf8",
+        );
+        const solanaConfig = YAML.parse(solanaConfigFile);
+        defaultKeypair = solanaConfig.keypair_path;
+        defaultUrl = solanaConfig.json_rpc_url;
+      } catch {
+        defaultKeypair = undefined;
+        defaultUrl = undefined;
+      }
+
+      const keypair = program.opts().keypair || defaultKeypair;
+      const url = program.opts().url || defaultUrl;
+
+      if (!keypair) {
         throw Error("required option '-k, --keypair <path>' not specified");
       }
-      initClient(program.opts().url, program.opts().keypair);
+      if (!url) {
+        throw Error("required option '-u, --url <string>' not specified");
+      }
+      initClient(url, keypair);
       client.log(`Processing command '${thisCommand.args[0]}'`);
     })
     .hook("postAction", () => {
