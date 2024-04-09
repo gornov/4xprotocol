@@ -70,18 +70,38 @@ Trigger position (close if limits reached).
 
 If position owner is: `HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu`. And closing price is 179661917.
 
-URL is `https://api.devnet.solana.com` or `http://localhost:8899`:
+
 ```sh
 cd app
-npx ts-node src/cli.ts \
-  --url http://localhost:8899 \
-  -k ~/.config/solana/id.json trigger-position \
-  TestPool1 \
-  So11111111111111111111111111111111111111112 \
-  HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
-  long \
-  HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
-  -p 179661917
+
+# HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu is user address
+# TestPool1 is pool name
+# So11111111111111111111111111111111111111112 is position token mint
+# Position is: long | short
+# Optional: `--url` is `https://api.devnet.solana.com` or `http://localhost:8899`.
+
+# Check profit or loss
+npx ts-node src/cli.ts get-pnl \
+    HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
+    TestPool1 \
+    So11111111111111111111111111111111111111112 \
+    long
+
+npx ts-node src/cli.ts get-exit-price-and-fee \
+    HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
+    TestPool1 \
+    So11111111111111111111111111111111111111112 \
+    long
+
+# get actual price from `get-exit-price-and-fee`
+npx ts-node src/cli.ts trigger-position \
+    TestPool1 \
+    So11111111111111111111111111111111111111112 \
+    HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
+    long \
+    HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu \
+    -p 183769543
+
 cd ..
 ```
 
