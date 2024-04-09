@@ -12,6 +12,7 @@ export const useHydrateStore = () => {
   const setPoolData = useGlobalStore((state) => state.setPoolData);
   const setPositionData = useGlobalStore((state) => state.setPositionData);
 
+  const custodyData = useGlobalStore((state) => state.custodyData);
   const poolData = useGlobalStore((state) => state.poolData);
 
   const setUserData = useGlobalStore((state) => state.setUserData);
@@ -23,8 +24,10 @@ export const useHydrateStore = () => {
   useEffect(() => {
     (async () => {
       const custodyData = await getCustodyData();
-      const poolData = await getPoolData(custodyData);
-      const positionInfos = await getPositionData(custodyData);
+      const [poolData, positionInfos] = await Promise.all([
+        getPoolData(custodyData),
+        getPositionData(custodyData, publicKey || undefined),
+      ]);
 
       console.log("poolData", poolData);
 
@@ -33,6 +36,16 @@ export const useHydrateStore = () => {
       setPositionData(positionInfos);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      console.log("Wallet: publicKey", publicKey?.toString());
+      if (publicKey) {
+        const _positionInfos = await getPositionData(custodyData, publicKey || undefined);
+        // setPositionData(positionInfos);
+      }
+    })();
+  }, [publicKey, custodyData])
 
   useEffect(() => {
     if (

@@ -496,7 +496,7 @@ export class PerpetualsClient {
       });
   };
 
-  upgradePosition = async (poolName: string, tokenMint: PublicKey, position: PublicKey) => {
+  upgradePosition = async (poolName: string, position: PublicKey) => {
     console.log("position", position.toString());
     await this.program.methods
       .upgradePosition({})

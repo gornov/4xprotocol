@@ -26,7 +26,8 @@ interface FetchPosition {
 export type PositionRequest = Pending | Failure | Success;
 
 export async function getPositionData(
-  custodyInfos: Record<string, CustodyAccount>
+  custodyInfos: Record<string, CustodyAccount>,
+  userPubkey?: PublicKey,
 ): Promise<PositionRequest> {
   let { perpetual_program } = await getPerpetualProgramAndProvider();
 
@@ -42,14 +43,25 @@ export async function getPositionData(
   }
   console.log("fetchedPositions", fetchedPositions);
 
-  try {
-    const allRawPositions = await perpetual_program.account.position.all();
-    console.info("allRawPositions", allRawPositions);
-  } catch {
-    console.error("Some positions can't be deserialized");
-  }
+  (async () => {
+    try {
+      const allRawPositions = await perpetual_program.account.position.all();
+      console.info("allRawPositions", allRawPositions);
 
-  
+      // Filter positions by user address
+      console.log("userPubkey", userPubkey?.toString());
+      if (userPubkey !== undefined) {
+        const filteredPositions = await perpetual_program.account.position.all([
+          { dataSize: 232 },
+          { memcmp: { offset: 8, bytes: userPubkey.toString() } }
+        ]);
+        console.info("filteredPositions", filteredPositions);
+      }
+    } catch {
+      console.error("Some positions can't be deserialized");
+    }
+  })();
+
   fetchedPositions.map(pos => {
     // Raw subscribe
     perpetual_program.provider.connection.onAccountChange(

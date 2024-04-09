@@ -214,11 +214,11 @@ async function upgradeCustody(poolName: string, tokenMint: PublicKey) {
 
 async function upgradePosition(poolName: string, tokenMint: PublicKey, owner: PublicKey, side: PositionSide) {
   const position = client.getPositionKey(owner, poolName, tokenMint, side);
-  await client.upgradePosition(poolName, tokenMint, position);
+  await client.upgradePosition(poolName, position);
 }
 
-async function upgradePositionByKey(poolName: string, tokenMint: PublicKey, position: PublicKey) {
-  await client.upgradePosition(poolName, tokenMint, position);
+async function upgradePositionByKey(poolName: string, position: PublicKey) {
+  await client.upgradePosition(poolName, position);
 }
 
 async function addLiquidity(
@@ -658,10 +658,9 @@ async function getAum(poolName: string) {
     .command("upgrade-position-by-key")
     .description("Upgrade deprecated position to the new version")
     .argument("<string>", "Pool name")
-    .argument("<pubkey>", "Token mint")
     .argument("<pubkey>", "Position")
-    .action(async (poolName, tokenMint, position, options) => {
-      await upgradePositionByKey(poolName, new PublicKey(tokenMint), new PublicKey(position));
+    .action(async (poolName, position, options) => {
+      await upgradePositionByKey(poolName, new PublicKey(position));
     });
 
   program
