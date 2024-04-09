@@ -39,9 +39,9 @@ export const useHydrateStore = () => {
 
   useEffect(() => {
     (async () => {
-      console.log("Wallet: publicKey", publicKey?.toString());
       if (publicKey) {
-        const _positionInfos = await getPositionData(custodyData, publicKey || undefined);
+        // @ts-ignore
+        const positionInfos = await getPositionData(custodyData, publicKey || undefined);
         // setPositionData(positionInfos);
       }
     })();

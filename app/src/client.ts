@@ -231,7 +231,7 @@ export class PerpetualsClient {
   };
 
   getUserPositions = async (wallet: PublicKey) => {
-    let data = encode(
+    let data = utils.bytes.bs58.encode(
       Buffer.concat([
         this.getAccountDiscriminator("Position"),
         wallet.toBuffer(),
@@ -253,13 +253,13 @@ export class PerpetualsClient {
   getPoolTokenPositions = async (poolName: string, tokenMint: PublicKey) => {
     let poolKey = this.getPoolKey(poolName);
     let custodyKey = this.getCustodyKey(poolName, tokenMint);
-    let data = encode(
+    let data = utils.bytes.bs58.encode(
       Buffer.concat([poolKey.toBuffer(), custodyKey.toBuffer()])
     );
     let positions = await this.provider.connection.getProgramAccounts(
       this.program.programId,
       {
-        filters: [{ dataSize: 200 }, { memcmp: { bytes: data, offset: 40 } }],
+        filters: [{ dataSize: 232 }, { memcmp: { bytes: data, offset: 40 } }],
       }
     );
     return Promise.all(

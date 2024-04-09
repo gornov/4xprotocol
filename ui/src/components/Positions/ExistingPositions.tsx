@@ -4,7 +4,12 @@ import PoolPositionRow from "@/components/Positions/PoolPositionRow";
 import { useGlobalStore } from "@/stores/store";
 import { countDictList, getPoolSortedPositions } from "@/utils/organizers";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { BN } from "bn.js";
 import { twMerge } from "tailwind-merge";
+
+BN.prototype.toJSON = function () {
+  return this.toString();
+};
 
 interface Props {
   className?: string;

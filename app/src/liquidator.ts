@@ -68,7 +68,7 @@ async function processLiquidations(
     }
   }
 
-  return [undercollateralized, liquidated];
+  return [undercollateralized, liquidated, positions.length];
 }
 
 async function run(poolName: string, tokenMint: PublicKey) {
@@ -101,12 +101,12 @@ async function run(poolName: string, tokenMint: PublicKey) {
       continue;
     }
 
-    let [undercollateralized, liquidated] = await processLiquidations(
+    let [undercollateralized, liquidated, total] = await processLiquidations(
       poolName,
       tokenMint,
       rewardReceivingAccount
     );
-    client.log(`Liquidated: ${liquidated} / ${undercollateralized}`);
+    client.log(`Liquidated: ${liquidated} / ${undercollateralized} of ${total}`);
 
     await sleep(liquidationDelay);
   }
