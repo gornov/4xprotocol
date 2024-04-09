@@ -67,10 +67,6 @@ cd ..
 ```
 
 Trigger position (close if limits reached).
-
-If position owner is: `HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu`. And closing price is 179661917.
-
-
 ```sh
 cd app
 
@@ -93,7 +89,7 @@ npx ts-node src/cli.ts get-exit-price-and-fee \
     So11111111111111111111111111111111111111112 \
     long
 
-# get actual price from `get-exit-price-and-fee`
+# get actual exit price from `get-exit-price-and-fee`
 npx ts-node src/cli.ts trigger-position \
     TestPool1 \
     So11111111111111111111111111111111111111112 \
