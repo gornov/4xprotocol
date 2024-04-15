@@ -171,8 +171,8 @@ export async function openPositionBuilder(
     collateral: new BN(finalPayAmount * 10 ** positionCustody.decimals),
     size: new BN(positionAmount * 10 ** positionCustody.decimals),
     side: side.toString() == "Long" ? TradeSide.Long : TradeSide.Short,
-    stopLoss: new BN(2_000000), // OR `null`
-    takeProfit: new BN(2_000000), // OR `null`
+    stopLoss: new BN(12_000000), // OR `null`
+    takeProfit: new BN(12_000000), // OR `null`
   };
 
   let methodBuilder = perpetual_program.methods.openPosition(params).accounts({

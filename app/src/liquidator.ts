@@ -3,8 +3,9 @@ import { PublicKey } from "@solana/web3.js";
 import { PerpetualsClient } from "./client";
 import { Command } from "commander";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import BN from "bn.js";
 
-let client;
+let client: PerpetualsClient;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -22,21 +23,45 @@ async function processLiquidations(
   // read all positions
   let positions = await client.getPoolTokenPositions(poolName, tokenMint);
 
+  let getLiquidationStateErrors = 0;
   let undercollateralized = 0;
   let liquidated = 0;
+  let triggered = 0;
+  let notExist = 0;
+
   for (const position of positions) {
     let position_side =
       JSON.stringify(position.side) === JSON.stringify({ long: {} })
         ? "long"
         : "short";
 
-    // check position state
-    let state = await client.getLiquidationState(
+    const positionKey = client.getPositionKey(
       position.owner,
       poolName,
       tokenMint,
-      position_side
+      position_side,
     );
+    const positionInfo = await client.provider.connection.getAccountInfo(positionKey);
+    const positionExists = positionInfo !== null;
+    if (!positionExists) {
+      notExist += 1;
+    }
+
+    let state = 0;
+    if (positionExists) {
+      try {
+        // check position state
+        state = await client.getLiquidationState(
+          position.owner,
+          poolName,
+          tokenMint,
+          position_side
+        );
+      } catch (err) {
+        getLiquidationStateErrors += 1;
+        // continue
+      }
+    }
 
     if (state === 1) {
       // liquidate over-leveraged positions
@@ -60,15 +85,76 @@ async function processLiquidations(
           userTokenAccount,
           rewardReceivingAccount
         );
+        liquidated += 1;
       } catch (err) {
-        continue;
+        // continue;
       }
+    }
 
-      liquidated += 1;
+    const { stopLoss, takeProfit } = position;
+    const isLimitOrder = stopLoss !== null || takeProfit !== null;
+
+    let pnl: { loss: BN, profit: BN } | undefined = undefined;
+    if (isLimitOrder && positionExists) {
+      try {
+        pnl = await client.getPnl(
+          position.owner,
+          poolName,
+          tokenMint,
+          position_side,
+        );
+      } catch (err) {
+        // continue;
+      }
+    }
+
+    if (pnl !== undefined) {
+      const { loss, profit } = pnl;
+      
+      const lossTriggered = stopLoss !== null && loss.gte(stopLoss);
+      const profitTriggered = takeProfit !== null && profit.gte(takeProfit);
+
+      if (lossTriggered || profitTriggered) {
+        try {
+          let userTokenAccount = (
+            await getOrCreateAssociatedTokenAccount(
+              client.provider.connection,
+              client.admin,
+              tokenMint,
+              position.owner
+            )
+          ).address;
+          const { price, fee: _ } = await client.getExitPriceAndFee(
+            position.owner,
+            poolName,
+            tokenMint,
+            position_side,
+          );
+          await client.triggerPosition(
+            position.owner,
+            poolName,
+            tokenMint,
+            position_side,
+            userTokenAccount,
+            userTokenAccount,
+            price,
+          )
+          triggered += 1;
+        } catch (err) {
+          // continue;
+        }
+      }
     }
   }
 
-  return [undercollateralized, liquidated, positions.length];
+  return {
+    undercollateralized,
+    liquidated,
+    total: positions.length,
+    getLiquidationStateErrors,
+    notExist,
+    triggered,
+  };
 }
 
 async function run(poolName: string, tokenMint: PublicKey) {
@@ -101,12 +187,14 @@ async function run(poolName: string, tokenMint: PublicKey) {
       continue;
     }
 
-    let [undercollateralized, liquidated, total] = await processLiquidations(
+    let { undercollateralized, liquidated, total, getLiquidationStateErrors, notExist, triggered } = await processLiquidations(
       poolName,
       tokenMint,
       rewardReceivingAccount
     );
-    client.log(`Liquidated: ${liquidated} / ${undercollateralized} of ${total}`);
+    client.log(
+      `Liquidated: ${liquidated} / ${undercollateralized}. Total: ${total}, Not exist: ${notExist}, getLiquidationStateErrors: ${getLiquidationStateErrors}, triggered: ${triggered}`,
+    );
 
     await sleep(liquidationDelay);
   }

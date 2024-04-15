@@ -43,40 +43,40 @@ export async function getPositionData(
   }
   console.log("fetchedPositions", fetchedPositions);
 
-  (async () => {
-    try {
-      const allRawPositions = await perpetual_program.account.position.all();
-      console.info("allRawPositions", allRawPositions);
+  // (async () => {
+  //   try {
+  //     const allRawPositions = await perpetual_program.account.position.all();
+  //     console.info("allRawPositions", allRawPositions);
 
-      // Filter positions by user address
-      console.log("userPubkey", userPubkey?.toString());
-      if (userPubkey !== undefined) {
-        const filteredPositions = await perpetual_program.account.position.all([
-          { dataSize: 232 },
-          { memcmp: { offset: 8, bytes: userPubkey.toString() } }
-        ]);
-        console.info("filteredPositions", filteredPositions);
-      }
-    } catch {
-      console.error("Some positions can't be deserialized");
-    }
-  })();
+  //     // Filter positions by user address
+  //     console.log("userPubkey", userPubkey?.toString());
+  //     if (userPubkey !== undefined) {
+  //       const filteredPositions = await perpetual_program.account.position.all([
+  //         { dataSize: 232 },
+  //         { memcmp: { offset: 8, bytes: userPubkey.toString() } }
+  //       ]);
+  //       console.info("filteredPositions", filteredPositions);
+  //     }
+  //   } catch {
+  //     console.error("Some positions can't be deserialized");
+  //   }
+  // })();
 
-  fetchedPositions.map(pos => {
-    // Raw subscribe
-    perpetual_program.provider.connection.onAccountChange(
-      pos.publicKey,
-      (accountInfo, ctx) => {
-        console.log("Event: onAccountChange", accountInfo, ctx);
-      }
-    )
+  // fetchedPositions.map(pos => {
+  //   // Raw subscribe
+  //   perpetual_program.provider.connection.onAccountChange(
+  //     pos.publicKey,
+  //     (accountInfo, ctx) => {
+  //       console.log("Event: onAccountChange", accountInfo, ctx);
+  //     }
+  //   )
 
-    // Anchor subscribe
-    let emitter = perpetual_program.account.position.subscribe(pos.publicKey);
-    emitter.on("change", (newPosition) => {
-      console.log("Event: change", pos.publicKey.toString(), newPosition);
-    });
-  });
+  //   // Anchor subscribe
+  //   let emitter = perpetual_program.account.position.subscribe(pos.publicKey);
+  //   emitter.on("change", (newPosition) => {
+  //     console.log("Event: change", pos.publicKey.toString(), newPosition);
+  //   });
+  // });
 
   let positionInfos: Record<string, PositionAccount> = fetchedPositions.reduce(
     (acc: Record<string, PositionAccount>, position: FetchPosition) => (

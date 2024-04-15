@@ -112,6 +112,19 @@ npx ts-node src/cli.ts \
 cd ..
 ```
 
+Start liquidator:
+```sh
+npx ts-node src/cli.ts get-pool-token-positions \
+    TestPool1 \
+    So11111111111111111111111111111111111111112
+
+npx ts-node src/liquidator.ts run \
+    --url https://api.devnet.solana.com \
+    -k ~/.config/solana/id.json \
+    TestPool1 \
+    So11111111111111111111111111111111111111112
+```
+
 ### Build
 
 First, generate a new key for the program address with `solana-keygen new -o <PROG_ID_JSON>`. Then replace the existing program ID with the newly generated address in `Anchor.toml` and `programs/perpetuals/src/lib.rs`.
