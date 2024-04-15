@@ -23,11 +23,9 @@ async function processLiquidations(
   // read all positions
   let positions = await client.getPoolTokenPositions(poolName, tokenMint);
 
-  let getLiquidationStateErrors = 0;
   let undercollateralized = 0;
   let liquidated = 0;
   let triggered = 0;
-  let notExist = 0;
 
   for (const position of positions) {
     let position_side =
@@ -44,7 +42,8 @@ async function processLiquidations(
     const positionInfo = await client.provider.connection.getAccountInfo(positionKey);
     const positionExists = positionInfo !== null;
     if (!positionExists) {
-      notExist += 1;
+      // TODO: error
+      continue;
     }
 
     let state = 0;
@@ -58,7 +57,6 @@ async function processLiquidations(
           position_side
         );
       } catch (err) {
-        getLiquidationStateErrors += 1;
         // continue
       }
     }
@@ -151,8 +149,6 @@ async function processLiquidations(
     undercollateralized,
     liquidated,
     total: positions.length,
-    getLiquidationStateErrors,
-    notExist,
     triggered,
   };
 }
@@ -187,13 +183,13 @@ async function run(poolName: string, tokenMint: PublicKey) {
       continue;
     }
 
-    let { undercollateralized, liquidated, total, getLiquidationStateErrors, notExist, triggered } = await processLiquidations(
+    let { undercollateralized, liquidated, total, triggered } = await processLiquidations(
       poolName,
       tokenMint,
       rewardReceivingAccount
     );
     client.log(
-      `Liquidated: ${liquidated} / ${undercollateralized}. Total: ${total}, Not exist: ${notExist}, getLiquidationStateErrors: ${getLiquidationStateErrors}, triggered: ${triggered}`,
+      `Liquidated: ${liquidated} / ${undercollateralized}. Total: ${total}, triggered: ${triggered}`,
     );
 
     await sleep(liquidationDelay);
