@@ -329,6 +329,26 @@ async function triggerPosition(
   )
 }
 
+async function updatePositionLimits(
+  poolName: string,
+  tokenMint: PublicKey,
+  owner: PublicKey,
+  side: PositionSide,
+  stopLoss: BN | null,
+  takeProfit: BN | null,
+) {
+  let position = await client.getUserPosition(owner, poolName, tokenMint, side);
+
+  await client.updatePositionLimits(
+    position.owner,
+    poolName,
+    tokenMint,
+    side,
+    stopLoss,
+    takeProfit,
+  )
+}
+
 async function getUserPosition(
   wallet: PublicKey,
   poolName: string,
@@ -695,6 +715,28 @@ async function getAum(poolName: string) {
         new PublicKey(owner),
         side,
         new BN(options.price),
+      );
+    });
+
+  program
+    .command("update-position-limits")
+    .description("Update position limits")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .argument("<pubkey>", "Owner")
+    .argument("<string>", "Side")
+    .argument("<bigint>", "Stop loss or null")
+    .argument("<bigint>", "Take profit or null")
+    .action(async (poolName, tokenMint, owner, side, rawStopLoss, rawTakeProfit, options) => {
+      const stopLoss = rawStopLoss === "0" || rawStopLoss === "null" ? null : new BN(rawStopLoss);
+      const takeProfit = rawTakeProfit === "0" || rawTakeProfit === "null" ? null : new BN(rawTakeProfit);
+      await updatePositionLimits(
+        poolName,
+        new PublicKey(tokenMint),
+        new PublicKey(owner),
+        side,
+        stopLoss,
+        takeProfit,
       );
     });
 

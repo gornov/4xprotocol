@@ -168,6 +168,10 @@ pub mod perpetuals {
         instructions::close_position(ctx, &params)
     }
 
+    pub fn update_position_limits(ctx: Context<UpdatePositionLimits>, params: UpdatePositionLimitsParams) -> Result<()> {
+        instructions::update_position_limits(ctx, &params)
+    }
+
     pub fn liquidate(ctx: Context<Liquidate>, params: LiquidateParams) -> Result<()> {
         instructions::liquidate(ctx, &params)
     }

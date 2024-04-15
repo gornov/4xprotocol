@@ -90,3 +90,19 @@ impl Position {
         )?)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_side() {
+        let mut v = Vec::new();
+        Side::Long.serialize(&mut v).unwrap();
+        assert_eq!(v.as_slice(), &[1u8]);
+
+        let mut v = Vec::new();
+        Side::Short.serialize(&mut v).unwrap();
+        assert_eq!(v.as_slice(), &[2u8]);
+    }
+}

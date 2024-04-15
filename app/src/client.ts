@@ -215,7 +215,7 @@ export class PerpetualsClient {
       wallet,
       pool,
       custody,
-      side === "long" ? [1] : [0],
+      side === "long" ? [1] : [2],
     ]).publicKey;
   };
 
@@ -240,12 +240,84 @@ export class PerpetualsClient {
     let positions = await this.provider.connection.getProgramAccounts(
       this.program.programId,
       {
-        filters: [{ dataSize: 200 }, { memcmp: { bytes: data, offset: 0 } }],
+        filters: [{ dataSize: 232 }, { memcmp: { bytes: data, offset: 0 } }],
       }
     );
     return Promise.all(
-      positions.map((position) => {
-        return this.program.account.position.fetch(position.pubkey);
+      positions.map(async (position) => {
+        let account = await this.program.account.position.fetch(position.pubkey);
+        console.log("account", JSON.stringify({ account, pubkey: position.pubkey }, null, 2));
+
+        const check_correctness = false;
+
+        if (check_correctness) {
+
+          // 1
+          let position_side =
+            JSON.stringify(account.side) === JSON.stringify({ long: {} })
+              ? "long"
+              : "short";
+          let out1 = this.findProgramAddress("position", [
+            account.owner,
+            account.pool,
+            account.custody,
+            position_side === "long" ? [1] : [2],
+          ]);
+
+          // 2
+          const label = "position";
+          const extraSeeds = [
+            account.owner,
+            account.pool,
+            account.custody,
+            position_side === "long" ? [1] : [2],
+          ];
+          let seeds = [Buffer.from(utils.bytes.utf8.encode(label))];
+          if (extraSeeds) {
+            for (let extraSeed of extraSeeds) {
+              if (typeof extraSeed === "string") {
+                seeds.push(Buffer.from(utils.bytes.utf8.encode(extraSeed)));
+              } else if (Array.isArray(extraSeed)) {
+                seeds.push(Buffer.from(extraSeed));
+              } else {
+                seeds.push(extraSeed.toBuffer());
+              }
+            }
+          }
+          let res2 = PublicKey.findProgramAddressSync(seeds, this.program.programId);
+          let out2 = { publicKey: res2[0], bump: res2[1] };
+
+          // 3
+          let res3 = this.findProgramAddress("position", [
+            new PublicKey("J9UQ5fP2g3kv5kWAV5A1wBJav16eFgvQUqzadBcz3MNu"),
+            new PublicKey("2raPSEshuG4Ke8Q6XufNG7aLG9PhX2TonPjgfze2zCgd"),
+            new PublicKey("Gy858NJNiwHX3aR9ZEUKgDLfdGifSBgcwSzwGPusBPNn"),
+            [0],
+          ]);
+          let out3 = { publicKey: res3[0], bump: res3[1] };
+
+
+          if (JSON.stringify(out1) !== JSON.stringify(out2) && JSON.stringify(out2) !== JSON.stringify(out3)) {
+            throw Error(`Check failed: ${out1}, ${out2}`);
+          }
+
+          const createOut1 = PublicKey.createProgramAddressSync([...seeds, Buffer.from([out2.bump])], this.program.programId);
+          console.log("createOut1", createOut1.toString());
+
+          // const createOut2 = PublicKey.createProgramAddressSync([...seeds, Buffer.from([account.bump])], this.program.programId);
+          // console.log("createOut2", createOut2.toString());
+
+          if (position.pubkey.toString() !== out1.publicKey.toString()) {
+            throw Error(`Wrong ID: ${position.pubkey.toString()}, ${out1.publicKey.toString()}, ${JSON.stringify(out1, null, 2)}`);
+          }
+
+          console.log("________________________");
+        }
+
+        return {
+          publicKey: position.pubkey,
+          account,
+        };
       })
     );
   };
@@ -621,6 +693,39 @@ export class PerpetualsClient {
           tokenMint
         ),
         tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc()
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
+  };
+
+  updatePositionLimits = async (
+    wallet: PublicKey,
+    poolName: string,
+    tokenMint: PublicKey,
+    side: PositionSide,
+    stopLoss: BN | null,
+    takeProfit: BN | null,
+  ) => {
+    console.log(JSON.stringify({ stopLoss, takeProfit }));
+    console.log(JSON.stringify({
+      owner: this.provider.wallet.publicKey,
+      perpetuals: this.perpetuals.publicKey,
+      pool: this.getPoolKey(poolName),
+      position: this.getPositionKey(wallet, poolName, tokenMint, side),
+      custody: this.getCustodyKey(poolName, tokenMint),
+    }, null, 2));
+
+    return await this.program.methods
+      .updatePositionLimits({ stopLoss, takeProfit })
+      .accounts({
+        owner: this.provider.wallet.publicKey,
+        perpetuals: this.perpetuals.publicKey,
+        pool: this.getPoolKey(poolName),
+        position: this.getPositionKey(wallet, poolName, tokenMint, side),
+        custody: this.getCustodyKey(poolName, tokenMint),
       })
       .rpc()
       .catch((err) => {
