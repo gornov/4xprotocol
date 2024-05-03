@@ -142,6 +142,7 @@ export async function openPositionBuilder(
     preInstructions.length == 0 &&
     positionCustody.getTokenE() == TokenE.SOL
   ) {
+    console.log("wrap sol if needed", payAmount);
     let ataIx = await createAtaIfNeeded(
       publicKey,
       publicKey,
@@ -151,11 +152,24 @@ export async function openPositionBuilder(
 
     if (ataIx) preInstructions.push(ataIx);
 
+    const View = new ViewHelper(connection, provider);
+    let getEntryPrice = await View.getEntryPriceAndFee(
+      payAmount,
+      positionAmount,
+      side,
+      pool!,
+      positionCustody!
+    );
+
+    let entryFee = Number(getEntryPrice.fee) / 10 ** positionCustody.decimals;
+
+    console.log("entry fee in wrap builder", entryFee);
+
     let wrapInstructions = await wrapSolIfNeeded(
       publicKey,
       publicKey,
       connection,
-      payAmount
+      payAmount + entryFee,
     );
     if (wrapInstructions) {
       preInstructions.push(...wrapInstructions);

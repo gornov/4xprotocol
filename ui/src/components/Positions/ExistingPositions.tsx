@@ -27,7 +27,7 @@ export function ExistingPositions(props: Props) {
   } else {
     positions = getPoolSortedPositions(positionData);
   }
-  console.log("positions", JSON.stringify(positions, null, 2));
+  // console.log("positions", JSON.stringify(positions, null, 2));
 
   if (countDictList(positions) === 0) {
     return <NoPositions emptyString="No Open Positions" />;

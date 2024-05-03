@@ -167,18 +167,6 @@ async function addCustody(
   });
   let ratios = client.adjustTokenRatios(pool.ratios);
 
-  console.log(
-    "client.addCustody",
-    "poolName", poolName, "\n",
-    "tokenMint", tokenMint.toString(), "\n",
-    "isStable", isStable, "\n",
-    "oracleConfig", JSON.stringify(oracleConfig, null, 2), "\n",
-    "pricingConfig", JSON.stringify(pricingConfig, null, 2), "\n",
-    "permissions", JSON.stringify(permissions, null, 2), "\n",
-    "fees", JSON.stringify(fees, null, 2), "\n",
-    "borrowRate", JSON.stringify(borrowRate, null, 2), "\n",
-    "ratios", ratios, "\n",
-  );
   await client.addCustody(
     poolName,
     tokenMint,

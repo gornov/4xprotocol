@@ -6,6 +6,7 @@ import {
   workspace,
   utils,
   BN,
+  web3 as anchorWeb3,
 } from "@project-serum/anchor";
 import { Perpetuals } from "../../target/types/perpetuals";
 import {
@@ -595,6 +596,9 @@ export class PerpetualsClient {
     poolName: string,
     tokenMint: PublicKey,
   ) => {
+    const modifyComputeUnits = anchorWeb3.ComputeBudgetProgram.setComputeUnitLimit({
+      units: 400_000,
+    });
     await this.program.methods
       .addLiquidity({
         amountIn,
@@ -619,6 +623,7 @@ export class PerpetualsClient {
         lpTokenMint: this.getPoolLpTokenKey(poolName),
         tokenProgram: TOKEN_PROGRAM_ID,
       })
+      .preInstructions([modifyComputeUnits])
       .remainingAccounts(await this.getCustodyMetas(poolName))
       .signers([this.admin])
       .rpc()

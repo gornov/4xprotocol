@@ -52,14 +52,26 @@ $cli add-custody TestPool2 Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr 5SSkXsEK
 popd
 
 echo "[Transfer]"
-solana transfer --url localhost HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu 100000 --allow-unfunded-recipient
+solana transfer --url localhost HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu 11 --allow-unfunded-recipient &
+TRANSFER_PID=$!
 
 echo "[Create account]"
 spl-token create-account --url localhost 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX
 echo "[Mint]"
 spl-token mint --url localhost 6QGdQbaZEgpXqqbGwXJZXwbZ9xJnthfyYNZ92ARzTdAX 100 || echo "Mint failed"
 
+wait $TRANSFER_PID
+
 pushd app
+
+spl-token unwrap 5Y5n5yTiRKiYLQHyfxryKmdwWJyQd9CXgKTnKhNLo55B || echo "Unwrap failed"
+spl-token wrap 200
+
+npx ts-node src/cli.ts add-liquidity \
+    TestPool2 \
+    So11111111111111111111111111111111111111112 \
+    --amount 100100100100
+
 # npx ts-node src/cli.ts upgrade-custody TestPool2 So11111111111111111111111111111111111111112
 # npx ts-node src/cli.ts upgrade-position TestPool2 So11111111111111111111111111111111111111112 HwtueJY1Brqx52SuEhwnhYs9MXCwTGcvVKjdUvoLEvnu long
 

@@ -429,7 +429,7 @@ impl Pool {
         } else {
             0
         };
-        msg!("current_margin_usd: {current_margin_usd}");
+        msg!("current_margin_usd: {}", current_margin_usd);
 
         if current_margin_usd > 0 {
             math::checked_as_u64(math::checked_div(

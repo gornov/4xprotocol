@@ -16,3 +16,6 @@ orig_?.json
 edited_?.json
 
 .env.local
+
+**/phantom_key.json
+**/phantom_key.txt

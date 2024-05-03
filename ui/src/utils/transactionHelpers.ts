@@ -58,13 +58,15 @@ export async function wrapSolIfNeeded(
     (await connection.getBalance(associatedTokenAccount)) / LAMPORTS_PER_SOL;
 
   if (balance < payAmount) {
-    console.log("balance insufficient");
+    console.log("balance insufficient", balance, payAmount);
 
+    // const multiplicator = 3;
+    const multiplicator = 1;
     preInstructions.push(
       SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: associatedTokenAccount,
-        lamports: Math.floor((payAmount - balance) * LAMPORTS_PER_SOL * 3),
+        lamports: Math.floor((payAmount - balance) * LAMPORTS_PER_SOL * multiplicator),
       })
     );
     preInstructions.push(

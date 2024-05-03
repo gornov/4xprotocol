@@ -41,7 +41,7 @@ export async function getPositionData(
     console.error("Error: fetchedPositions", error);
     fetchedPositions = [];
   }
-  console.log("fetchedPositions", fetchedPositions);
+  // console.log("fetchedPositions", fetchedPositions);
 
   // (async () => {
   //   try {
