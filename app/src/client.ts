@@ -490,7 +490,7 @@ export class PerpetualsClient {
     permissions,
     fees,
     borrowRate,
-    ratios
+    ratios,
   ) => {
     await this.program.methods
       .addCustody({
@@ -517,6 +517,41 @@ export class PerpetualsClient {
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: SYSVAR_RENT_PUBKEY,
+      })
+      .signers([this.admin])
+      .rpc()
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
+  };
+
+  setCustodyConfig = async (
+    poolName: string,
+    tokenMint: PublicKey,
+    isStable: boolean,
+    oracleConfig,
+    pricingConfig,
+    permissions,
+    fees,
+    borrowRate,
+    ratios,
+  ) => {
+    await this.program.methods
+      .setCustodyConfig({
+        isStable,
+        oracle: oracleConfig,
+        pricing: pricingConfig,
+        permissions,
+        fees,
+        borrowRate,
+        ratios,
+      })
+      .accounts({
+        admin: this.admin.publicKey,
+        multisig: this.multisig.publicKey,
+        pool: this.getPoolKey(poolName),
+        custody: this.getCustodyKey(poolName, tokenMint),
       })
       .signers([this.admin])
       .rpc()

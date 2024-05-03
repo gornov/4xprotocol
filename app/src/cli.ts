@@ -110,8 +110,8 @@ async function addCustody(
     maxLeverage: new BN(1000000),
     maxPayoffMult: new BN(10000),
     maxUtilization: new BN(10000),
-    maxPositionLockedUsd: new BN(10000000000), // $10_000
-    maxTotalLockedUsd: new BN(100000000000), // $100_000
+    maxPositionLockedUsd: new BN(100000000000), // $100_000
+    maxTotalLockedUsd: new BN(1000000000000), // $1_000_000
   };
   let permissions = {
     allowSwap: true,
@@ -168,6 +168,95 @@ async function addCustody(
   let ratios = client.adjustTokenRatios(pool.ratios);
 
   await client.addCustody(
+    poolName,
+    tokenMint,
+    isStable,
+    oracleConfig,
+    pricingConfig,
+    permissions,
+    fees,
+    borrowRate,
+    ratios
+  );
+}
+
+async function setCustodyConfig(
+  poolName: string,
+  tokenMint: PublicKey,
+  tokenOracle: PublicKey,
+  isStable: boolean
+) {
+  // to be loaded from config file
+  let oracleConfig = {
+    maxPriceError: new BN(10000),
+    maxPriceAgeSec: 60,
+    oracleType: { pyth: {} },
+    oracleAccount: tokenOracle,
+  };
+  let pricingConfig = {
+    useEma: true,
+    useUnrealizedPnlInAum: true,
+    tradeSpreadLong: new BN(100),
+    tradeSpreadShort: new BN(100),
+    swapSpread: new BN(200),
+    minInitialLeverage: new BN(10000),
+    maxInitialLeverage: new BN(1000000),
+    maxLeverage: new BN(1000000),
+    maxPayoffMult: new BN(10000),
+    maxUtilization: new BN(10000),
+    maxPositionLockedUsd: new BN(100000000000), // $100_000
+    maxTotalLockedUsd: new BN(1000000000000), // $1_000_000
+  };
+  let permissions = {
+    allowSwap: true,
+    allowAddLiquidity: true,
+    allowRemoveLiquidity: true,
+    allowOpenPosition: true,
+    allowClosePosition: true,
+    allowPnlWithdrawal: true,
+    allowCollateralWithdrawal: true,
+    allowSizeChange: true,
+  };
+  let fees = {
+    mode: { linear: {} },
+    ratioMult: new BN(20000),
+    utilizationMult: new BN(20000),
+    swapIn: new BN(100),
+    swapOut: new BN(100),
+    stableSwapIn: new BN(100),
+    stableSwapOut: new BN(100),
+    addLiquidity: new BN(100),
+    removeLiquidity: new BN(100),
+    openPosition: new BN(100),
+    closePosition: new BN(100),
+    liquidation: new BN(100),
+    protocolShare: new BN(10),
+  };
+  let borrowRate = {
+    baseRate: new BN(0),
+    slope1: new BN(80000),
+    slope2: new BN(120000),
+    optimalUtilization: new BN(800000000),
+  };
+
+  let pool = undefined;
+  for (let index = 0; index < 3; index++) {
+    try {
+      pool = await client.getPool(poolName);
+      break;
+    } catch {
+      // Handle retry
+      console.warn("Failed to get pool. Retrying in 1 second");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  if (pool == undefined) {
+    pool = await client.getPool(poolName); // Unhandled error
+  }
+
+  let ratios = client.adjustTokenRatios(pool.ratios);
+
+  await client.setCustodyConfig(
     poolName,
     tokenMint,
     isStable,
@@ -606,6 +695,22 @@ async function getAum(poolName: string) {
     .option("-s, --stablecoin", "Custody is for a stablecoin")
     .action(async (poolName, tokenMint, tokenOracle, options) => {
       await addCustody(
+        poolName,
+        new PublicKey(tokenMint),
+        new PublicKey(tokenOracle),
+        options.stablecoin
+      );
+    });
+
+  program
+    .command("set-custody-config")
+    .description("Update token custody config")
+    .argument("<string>", "Pool name")
+    .argument("<pubkey>", "Token mint")
+    .argument("<pubkey>", "Token oracle account")
+    .option("-s, --stablecoin", "Custody is for a stablecoin")
+    .action(async (poolName, tokenMint, tokenOracle, options) => {
+      await setCustodyConfig(
         poolName,
         new PublicKey(tokenMint),
         new PublicKey(tokenOracle),
