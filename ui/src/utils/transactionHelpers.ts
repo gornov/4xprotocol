@@ -60,13 +60,13 @@ export async function wrapSolIfNeeded(
   if (balance < payAmount) {
     console.log("balance insufficient", balance, payAmount);
 
-    // const multiplicator = 3;
-    const multiplicator = 1;
+    const transferLamports = Math.ceil((payAmount - balance) * LAMPORTS_PER_SOL);
+    console.log("balance insufficient: transferLamports", transferLamports);
     preInstructions.push(
       SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: associatedTokenAccount,
-        lamports: Math.floor((payAmount - balance) * LAMPORTS_PER_SOL * multiplicator),
+        lamports: transferLamports,
       })
     );
     preInstructions.push(
